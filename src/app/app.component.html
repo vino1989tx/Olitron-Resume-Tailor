@@ -28,38 +28,38 @@
       } @else if (showHeaderSignIn) {
         <div class="header-login" #loginButton></div>
       }
-      <div class="hdr-dropdown">
-        <button
-          type="button"
-          class="download-btn download-btn-menu"
-          [class.open]="resumeMenuOpen"
-          [attr.aria-expanded]="resumeMenuOpen"
-          (click)="toggleResumeMenu()"
-        >
-          📄 Resume <span class="caret" aria-hidden="true">▾</span>
-        </button>
-        @if (resumeMenuOpen) {
-          <div class="dropdown-menu" role="menu">
-            <button
-              type="button"
-              class="dropdown-item"
-              role="menuitem"
-              (click)="openUploadPanel(); closeMenus()"
-            >
-              📤 Upload Resume
-            </button>
-            <button
-              type="button"
-              class="dropdown-item"
-              role="menuitem"
-              (click)="openResumeHistory(); closeMenus()"
-            >
-              📁 Saved Resume
-            </button>
-          </div>
-        }
-      </div>
       @if (isResumeLoaded) {
+        <div class="hdr-dropdown">
+          <button
+            type="button"
+            class="download-btn download-btn-menu"
+            [class.open]="resumeMenuOpen"
+            [attr.aria-expanded]="resumeMenuOpen"
+            (click)="toggleResumeMenu()"
+          >
+            📄 Resume <span class="caret" aria-hidden="true">▾</span>
+          </button>
+          @if (resumeMenuOpen) {
+            <div class="dropdown-menu" role="menu">
+              <button
+                type="button"
+                class="dropdown-item"
+                role="menuitem"
+                (click)="openUploadPanel(); closeMenus()"
+              >
+                📤 Upload Resume
+              </button>
+              <button
+                type="button"
+                class="dropdown-item"
+                role="menuitem"
+                (click)="openResumeHistory(); closeMenus()"
+              >
+                📁 Saved Resume
+              </button>
+            </div>
+          }
+        </div>
         <button
           type="button"
           class="download-btn download-btn-reset"
@@ -99,7 +99,7 @@
               >
                 📝 Word
               </button>
-              
+
             </div>
           }
         </div>

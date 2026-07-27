@@ -79,13 +79,12 @@
   animation: brand-twinkle 3.2s ease-in-out infinite;
 }
 
-/* Dark topbar: no white box — invert the logo to a crisp white wordmark that
-   blends with the space theme, with a soft purple glow. */
+/* Dark topbar: show the real logo (no white box), with a soft glow so the
+   dark wordmark stays legible on the space-dark topbar. */
 .app-dark .brand-logo {
   background: transparent;
   padding: 0;
-  filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(160, 120, 255, 0.55));
-  animation: none;
+  filter: drop-shadow(0 0 10px rgba(130, 160, 255, 0.6));
 }
 
 /* Gentle golden glow pulse (twinkle) — no opacity/scale change, so the wordmark stays steady. */
