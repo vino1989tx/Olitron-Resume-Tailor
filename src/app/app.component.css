@@ -502,15 +502,20 @@
   to { background-position: 0 0, 200% 0, 0 0; }
 }
 
-/* Real hero illustration (premium astronaut + resume card image) */
+/* Real hero illustration (premium astronaut + resume card image).
+   The PNG has its own dark space background, so feather the edges to blend it
+   seamlessly into the page instead of showing a hard rectangle. */
 .hero-illustration {
   width: 100%;
-  max-width: 640px;
+  max-width: 720px;
   height: auto;
   display: block;
   margin: 0 auto;
+  border-radius: 18px;
   filter: drop-shadow(0 24px 70px rgba(124, 77, 255, 0.5));
   animation: floaty 7s ease-in-out infinite;
+  -webkit-mask-image: radial-gradient(120% 120% at 55% 45%, #000 62%, transparent 92%);
+  mask-image: radial-gradient(120% 120% at 55% 45%, #000 62%, transparent 92%);
 }
 
 /* --- Hero (two columns) --- */
