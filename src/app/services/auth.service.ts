@@ -64,7 +64,7 @@ export class AuthService {
       if (user) {
         this.idToken = stored;
         this._user.set(user);
-        void this.refreshUsage();
+        void this.recordLogin();
       }
     }
 
@@ -113,6 +113,26 @@ export class AuthService {
     return this.idToken;
   }
 
+  /** Record this sign-in in the backend users table (once per login). */
+  async recordLogin(): Promise<void> {
+    const baseUrl = (environment.apiBaseUrl || '').trim();
+    if (!baseUrl || !this.idToken) return;
+    try {
+      const response = await fetch(`${baseUrl.replace(/\/+$/, '')}/api/login`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${this.idToken}` },
+      });
+      if (response.status === 401) {
+        this.signOut();
+        return;
+      }
+      if (!response.ok) return;
+      this._usage.set((await response.json()) as UsageInfo);
+    } catch {
+      // Network hiccup — the app still works; usage will refresh after AI calls.
+    }
+  }
+
   /** Fetch the current user's cumulative usage + quota from the backend. */
   async refreshUsage(): Promise<void> {
     const baseUrl = (environment.apiBaseUrl || '').trim();
@@ -143,7 +163,7 @@ export class AuthService {
       // ignore
     }
     this._user.set(user);
-    void this.refreshUsage();
+    void this.recordLogin();
   }
 
   private readStoredToken(): string {
