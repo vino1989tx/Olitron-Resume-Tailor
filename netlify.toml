@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist/resume-tailor/browser"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA fallback: serve index.html for any unmatched path
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
