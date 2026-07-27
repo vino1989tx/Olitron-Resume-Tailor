@@ -569,10 +569,23 @@
   margin-bottom: 26px;
 }
 .hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
   font-weight: 600;
   color: #d7d2f0;
 }
+
+/* Shared line-icon style (stroke-based, purple accent). */
+.ic {
+  fill: none;
+  stroke: #a855f7;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hero-pill .ic { width: 19px; height: 19px; flex: 0 0 auto; }
 
 .hero-actions {
   display: flex;
@@ -668,30 +681,41 @@
 .resume-card {
   position: relative;
   z-index: 2;
-  width: 270px;
-  padding: 22px 22px 26px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(20, 18, 42, 0.92), rgba(12, 10, 28, 0.92));
-  border: 1px solid rgba(139, 122, 255, 0.55);
-  box-shadow: 0 0 0 1px rgba(90, 200, 255, 0.25), 0 24px 60px rgba(0, 0, 0, 0.6),
-    0 0 50px rgba(124, 77, 255, 0.35);
+  width: 290px;
+  padding: 24px 24px 28px;
+  border-radius: 20px;
+  /* Neon cyan→blue→purple gradient outline (padding-box fill + border-box grad). */
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(180deg, rgba(14, 11, 34, 0.94), rgba(9, 7, 24, 0.94)) padding-box,
+    linear-gradient(135deg, #22d3ee, #4f7bf6 45%, #a855f7) border-box;
+  box-shadow: 0 0 46px rgba(79, 123, 246, 0.45), 0 24px 60px rgba(0, 0, 0, 0.6);
   animation: floaty 8s ease-in-out infinite;
 }
 
-.rc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.rc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
 .rc-avatar {
-  width: 44px; height: 44px; border-radius: 50%;
+  width: 46px; height: 46px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 24px;
-  background: rgba(139, 92, 246, 0.2);
+  background: radial-gradient(circle at 40% 35%, #3a2f6e, #1a1440);
   border: 1px solid rgba(139, 122, 255, 0.5);
 }
-.rc-name { font-size: 15px; font-weight: 700; color: #f2efff; }
-.rc-role { font-size: 11.5px; color: #a99fce; }
+.rc-avatar .ic { width: 26px; height: 26px; stroke: #c9b8ff; }
+.rc-name { font-size: 16px; font-weight: 700; color: #f2efff; }
+.rc-role { font-size: 12px; color: #9f96c8; }
 
-.rc-sec { margin: 14px 0 8px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: #8ea2ff; }
-.rc-line { height: 6px; border-radius: 3px; background: rgba(150, 160, 210, 0.35); margin-bottom: 7px; }
-.rc-line.short { width: 62%; }
+.rc-contact {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; color: #8e88b3; margin-bottom: 5px;
+}
+.rc-contact .ic { width: 14px; height: 14px; stroke: #5aa9ff; stroke-width: 2; }
+
+.rc-sec { margin: 14px 0 8px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: #7fb0ff; }
+.rc-line {
+  height: 6px; border-radius: 3px; margin-bottom: 7px;
+  background: linear-gradient(90deg, rgba(90, 169, 255, 0.55), rgba(90, 169, 255, 0.12));
+}
+.rc-line.short { width: 60%; }
 
 .rc-match {
   position: absolute;
@@ -741,7 +765,8 @@
   backdrop-filter: blur(6px);
 }
 .stat { display: flex; align-items: center; gap: 12px; justify-content: center; }
-.stat-ic { font-size: 26px; }
+.stat-ic { display: inline-flex; }
+.stat-ic .ic { width: 30px; height: 30px; }
 .stat b { display: block; font-size: 26px; font-weight: 800; color: #f4f1ff; }
 .stat small { font-size: 12.5px; color: #a79fca; }
 
@@ -769,9 +794,25 @@
   border-color: rgba(139, 122, 255, 0.5);
   box-shadow: 0 16px 40px rgba(124, 77, 255, 0.25);
 }
-.fc-icon { font-size: 30px; margin-bottom: 12px; }
+.fc-icon {
+  width: 52px; height: 52px;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+  border-radius: 13px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 122, 255, 0.28);
+}
+.fc-icon .ic { width: 26px; height: 26px; }
 .feature-card h3 { margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #f2efff; }
-.feature-card p { margin: 0; font-size: 13.5px; line-height: 1.55; color: #a79fca; }
+.feature-card p { margin: 0 0 14px; font-size: 13.5px; line-height: 1.55; color: #a79fca; }
+.fc-arrow {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #a855f7;
+  transition: transform 0.15s ease;
+}
+.feature-card:hover .fc-arrow { transform: translateX(5px); }
 
 @media (prefers-reduced-motion: reduce) {
   .nebula, .stars, .shooting-star, .planet, .astronaut, .resume-card, .orbit-portal,
