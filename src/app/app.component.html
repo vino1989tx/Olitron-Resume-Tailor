@@ -175,8 +175,8 @@
     </div>
   }
 
-  <div class="app-body" [class.no-aside]="!isResumeLoaded">
-    @if (isResumeLoaded) {
+  <div class="app-body" [class.no-aside]="!loggedIn || !isResumeLoaded">
+    @if (loggedIn && isResumeLoaded) {
     <aside class="tailor-panel" [class.open]="tailorPanelOpen">
       <button
         type="button"
@@ -799,7 +799,7 @@
   </div>
 
   <!-- Mobile: backdrop + floating button to open the tailor panel drawer -->
-  @if (isResumeLoaded) {
+  @if (loggedIn && isResumeLoaded) {
     @if (tailorPanelOpen) {
       <div class="tailor-backdrop" (click)="closeTailorPanel()"></div>
     }
