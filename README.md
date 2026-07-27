@@ -38,6 +38,17 @@ as PDF or Word.
   > If you ever want to serve AI calls with a shared key, put it behind a small
   > backend proxy — never in the client bundle.
 
+## Managed backend (Gemini) — key never in the browser
+
+Instead of each user supplying their own key, you can run the FastAPI service in
+[`backend/`](backend/README.md), which holds a **Google Gemini** key server-side.
+Set `NG_APP_API_BASE_URL` to the backend's URL (in `.env.local` for dev, or in
+Netlify's environment variables for prod) and the UI routes every AI call through
+it — no provider key is needed in the browser. When the variable is empty, the app
+falls back to the bring-your-own OpenAI/Anthropic key flow described above.
+
+See [`backend/README.md`](backend/README.md) for run and deploy instructions.
+
 ## Commands
 
 - `npm start` — dev server (bakes the local key)

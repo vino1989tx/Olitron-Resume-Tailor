@@ -96,6 +96,30 @@ export function extractJsonObject(text: unknown): Record<string, unknown> {
   return JSON.parse(jsonMatch[0]);
 }
 
+// Managed backend path: POST the prompt to our FastAPI service, which holds the
+// Gemini key server-side and returns the model's raw JSON text. Used whenever a
+// backend URL is configured, so no provider key is needed in the browser.
+async function callGeminiBackend(
+  baseUrl: string,
+  prompt: string,
+  maxTokens: number,
+): Promise<Record<string, unknown>> {
+  const response = await fetch(`${baseUrl.replace(/\/+$/, "")}/api/generate`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt, maxTokens }),
+  });
+
+  if (!response.ok) {
+    const errBody = (await response.json().catch(() => null)) as { detail?: string } | null;
+    const message = errBody?.detail || `Backend request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data = (await response.json()) as { text?: string };
+  return extractJsonObject(data.text);
+}
+
 async function callAnthropic(
   apiKey: string,
   prompt: string,
@@ -199,6 +223,13 @@ export async function callModelWithFallback({
   openAiModel?: string;
   anthropicModel?: string;
 }): Promise<Record<string, unknown>> {
+  // Prefer the managed backend when configured: the key stays on the server and
+  // the browser sends only the prompt. Falls through to BYO keys when unset.
+  const backendUrl = (environment.apiBaseUrl || "").trim();
+  if (backendUrl) {
+    return await callGeminiBackend(backendUrl, prompt, maxTokens);
+  }
+
   const anthropicKey = getApiKeyValue(apiKey, "anthropic");
   const openAiKey = getApiKeyValue(apiKey, "openai");
 

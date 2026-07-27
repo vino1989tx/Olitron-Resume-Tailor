@@ -46,6 +46,10 @@ const source = `// Generated from .env.local. Do not edit manually.
 export const environment = {
   anthropicApiKey: ${keyValue('NG_APP_ANTHROPIC_API_KEY')},
   openAiApiKey: ${keyValue('NG_APP_OPENAI_API_KEY')},
+  // Base URL of the managed AI backend (FastAPI + Gemini). When set, all AI
+  // calls route through it and no provider key is needed in the browser. This
+  // is a public URL (not a secret), so it is kept in production builds too.
+  apiBaseUrl: ${stringValue('NG_APP_API_BASE_URL', '')},
   openAiModel: ${stringValue('NG_APP_OPENAI_MODEL', 'gpt-4.1')},
   openAiParseModel: ${stringValue('NG_APP_OPENAI_PARSE_MODEL', 'gpt-4.1-mini')},
   openAiInputPrice: ${numberValue('NG_APP_OPENAI_INPUT_PRICE', 2)},
