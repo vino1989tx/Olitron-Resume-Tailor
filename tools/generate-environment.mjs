@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const envPath = resolve(root, '.env.local');
@@ -55,4 +55,7 @@ export const environment = {
 };
 `;
 
+// The output directory is git-ignored (it only holds the generated file), so it
+// may not exist on a fresh clone (e.g. CI/Netlify). Create it before writing.
+mkdirSync(dirname(outputPath), { recursive: true });
 writeFileSync(outputPath, source);
