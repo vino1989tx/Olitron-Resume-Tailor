@@ -89,7 +89,6 @@ export class AuthService {
         text: 'signin_with',
         logo_alignment: 'left',
       });
-      google.accounts.id.prompt();
     });
   }
 

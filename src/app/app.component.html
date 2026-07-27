@@ -1,17 +1,4 @@
 <div class="app-shell" [class.app-dark]="isDark">
-  <!-- Google sign-in gate: covers the whole app until the user authenticates. -->
-  @if (loginRequired) {
-    <div class="login-gate">
-      <div class="login-card">
-        <img src="Olitron-full.png" alt="Olitron" class="login-logo" />
-        <h1 class="brand-title">ResumeCraft</h1>
-        <p class="login-sub">ATS-Optimized Resume Tailoring</p>
-        <p class="login-hint">Sign in with your Google account to continue.</p>
-        <div class="login-btn-host" #loginButton></div>
-      </div>
-    </div>
-  }
-
   <header class="app-topbar">
     <div class="topbar-brand">
       <div class="brand">
@@ -38,6 +25,8 @@
           <span class="user-email">{{ u.email }}</span>
           <button type="button" class="signout-btn" (click)="auth.signOut()">Sign out</button>
         </div>
+      } @else if (showHeaderSignIn) {
+        <div class="header-login" #loginButton></div>
       }
       <div class="hdr-dropdown">
         <button
@@ -170,7 +159,8 @@
     </div>
   }
 
-  <div class="app-body">
+  <div class="app-body" [class.no-aside]="!isResumeLoaded">
+    @if (isResumeLoaded) {
     <aside class="tailor-panel" [class.open]="tailorPanelOpen">
       <button
         type="button"
@@ -305,20 +295,55 @@
         <div class="status-success">Changes applied across the resume — review the preview.</div>
       }
     </aside>
+    }
 
     <main class="preview-column">
       @if (!isResumeLoaded) {
-        <div class="empty-preview">
-          <div class="empty-preview-icon">📄</div>
-          <h2>No resume loaded</h2>
-          <p>Upload a PDF or DOCX resume, or open a previously saved one, to start tailoring.</p>
-          <div class="empty-preview-actions">
-            <button type="button" class="primary-btn" (click)="openUploadPanel()">
-              📤 Upload Resume
+        <div class="hero">
+          <p class="hero-eyebrow">ATS-Optimized Resume Tailoring</p>
+          <h1 class="hero-title">Resume ATS AI Builder</h1>
+          <p class="hero-sub">
+            Upload your resume and tailor it to any job description — rewritten with
+            the right keywords to sail through Applicant Tracking Systems.
+          </p>
+
+          <div class="hero-stage">
+            <span class="hero-chip hero-chip-tl">🎯 ATS Keyword Match</span>
+            <span class="hero-chip hero-chip-tr">✨ AI Bullet Rewrite</span>
+            <span class="hero-chip hero-chip-bl">📊 Section Targeting</span>
+            <span class="hero-chip hero-chip-br">⬇️ PDF &amp; Word Export</span>
+            <div class="hero-orb">
+              <div class="hero-orb-glow"></div>
+              <div class="hero-orb-icon">📄</div>
+            </div>
+          </div>
+
+          <div class="hero-actions">
+            <button type="button" class="hero-cta" (click)="openUploadPanel()">
+              📤 Upload your resume
             </button>
-            <button type="button" class="ghost-btn" (click)="openResumeHistory()">
-              📂 Open Saved Resume
+            <button type="button" class="hero-cta-ghost" (click)="openResumeHistory()">
+              📂 Open saved resume
             </button>
+          </div>
+          <p class="hero-note">🔒 You'll sign in with Google before your resume is parsed.</p>
+
+          <div class="hero-cards">
+            <div class="hero-card">
+              <div class="hero-card-icon">🎯</div>
+              <h3>ATS-Optimized</h3>
+              <p>Keywords, phrasing, and structure aligned to what ATS filters scan for.</p>
+            </div>
+            <div class="hero-card">
+              <div class="hero-card-icon">✨</div>
+              <h3>AI Tailoring</h3>
+              <p>Rewrites each bullet to match the target role — grounded in your real experience.</p>
+            </div>
+            <div class="hero-card">
+              <div class="hero-card-icon">⬇️</div>
+              <h3>Instant Export</h3>
+              <p>Download a polished, recruiter-ready resume as PDF or Word in one click.</p>
+            </div>
           </div>
         </div>
       } @else if (previewVisible) {
@@ -612,18 +637,20 @@
   </div>
 
   <!-- Mobile: backdrop + floating button to open the tailor panel drawer -->
-  @if (tailorPanelOpen) {
-    <div class="tailor-backdrop" (click)="closeTailorPanel()"></div>
+  @if (isResumeLoaded) {
+    @if (tailorPanelOpen) {
+      <div class="tailor-backdrop" (click)="closeTailorPanel()"></div>
+    }
+    <button
+      type="button"
+      class="tailor-fab"
+      (click)="toggleTailorPanel()"
+      [attr.aria-expanded]="tailorPanelOpen"
+      aria-label="Open tailor panel"
+    >
+      ✎ Tailor
+    </button>
   }
-  <button
-    type="button"
-    class="tailor-fab"
-    (click)="toggleTailorPanel()"
-    [attr.aria-expanded]="tailorPanelOpen"
-    aria-label="Open tailor panel"
-  >
-    ✎ Tailor
-  </button>
 
   <footer class="app-footer">
     <span>© {{ currentYear }} {{ companyName }}</span>

@@ -1,9 +1,19 @@
-import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  effect,
+  inject,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ResumeUploadService } from '../services/resume-upload.service';
 import { ResumeParserService } from '../services/resume-parser.service';
 import { ResumeStorageService } from '../services/resume-storage.service';
 import { ResumeData } from '../data/resume-data';
+import { AuthService } from '../services/auth.service';
 
 type UploadStatus = 'idle' | 'extracting' | 'parsing' | 'saving' | 'success' | 'error';
 
@@ -19,6 +29,7 @@ export class ResumeUploadComponent {
   private uploadService = inject(ResumeUploadService);
   private parserService = inject(ResumeParserService);
   private storageService = inject(ResumeStorageService);
+  readonly auth = inject(AuthService);
 
   readonly resumeUploaded = output<{ data: ResumeData; key: string }>();
   readonly uploadCancelled = output<void>();
@@ -29,6 +40,24 @@ export class ResumeUploadComponent {
   readonly selectedFile = signal<File | null>(null);
   readonly progress = signal(0);
   readonly dragOver = signal(false);
+  // True when parsing is blocked pending Google sign-in.
+  readonly needsLogin = signal(false);
+
+  private readonly loginHost = viewChild<ElementRef<HTMLElement>>('loginHost');
+
+  constructor() {
+    // While waiting on sign-in: render the Google button; once signed in, parse.
+    effect(() => {
+      if (!this.needsLogin()) return;
+      if (this.auth.user()) {
+        this.needsLogin.set(false);
+        void this.runPipeline();
+        return;
+      }
+      const host = this.loginHost();
+      if (host) this.auth.renderButton(host.nativeElement);
+    });
+  }
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
@@ -76,13 +105,28 @@ export class ResumeUploadComponent {
       return;
     }
 
+    // Parsing is an AI call — require Google sign-in first. The effect resumes
+    // the pipeline automatically once the user signs in.
+    if (this.auth.enabled && !this.auth.user()) {
+      this.errorMessage.set(null);
+      this.needsLogin.set(true);
+      return;
+    }
+
+    await this.runPipeline();
+  }
+
+  private async runPipeline() {
+    const file = this.selectedFile();
+    if (!file) return;
+
     try {
       // Step 1: Extract text
       this.status.set('extracting');
       this.progress.set(20);
       const extractedText = await this.uploadService.extractResumeText(file);
 
-      // Step 2: Parse with AI (backend holds the key; user must be signed in)
+      // Step 2: Parse with AI (backend holds the key; user is signed in)
       this.status.set('parsing');
       this.progress.set(50);
       const resumeData = await this.parserService.parseResumeText(extractedText);
@@ -110,6 +154,7 @@ export class ResumeUploadComponent {
     if (status === 'idle' || status === 'error' || status === 'success') {
       this.selectedFile.set(null);
       this.errorMessage.set(null);
+      this.needsLogin.set(false);
       this.uploadCancelled.emit();
     }
   }
@@ -121,6 +166,7 @@ export class ResumeUploadComponent {
     if (status === 'extracting' || status === 'parsing' || status === 'saving') return;
     this.selectedFile.set(null);
     this.errorMessage.set(null);
+    this.needsLogin.set(false);
     this.uploadCancelled.emit();
   }
 

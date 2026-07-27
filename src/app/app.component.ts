@@ -78,8 +78,8 @@ export class AppComponent implements OnInit {
   ] as const;
 
   constructor() {
-    // When the login gate is visible and Google Identity Services is ready,
-    // render the official "Sign in with Google" button into its container.
+    // Render the header "Sign in with Google" button whenever it's shown
+    // (auth enabled, GIS ready, and the user isn't signed in yet).
     effect(() => {
       const host = this.loginButton();
       if (this.auth.enabled && this.auth.ready() && !this.auth.user() && host) {
@@ -93,8 +93,8 @@ export class AppComponent implements OnInit {
     return !!(environment.apiBaseUrl || '').trim();
   }
 
-  // Whether the app should block on Google sign-in (auth configured but signed out).
-  get loginRequired(): boolean {
+  // True when Google auth is enabled but nobody is signed in yet (show header sign-in).
+  get showHeaderSignIn(): boolean {
     return this.auth.enabled && !this.auth.user();
   }
   readonly defaultHeaderColor = DEFAULT_HEADER_COLOR;
