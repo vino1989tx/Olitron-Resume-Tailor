@@ -79,11 +79,13 @@
   animation: brand-twinkle 3.2s ease-in-out infinite;
 }
 
-/* Dark topbar: the logo's dark "LITRON" text needs a light backing to stay legible. */
+/* Dark topbar: no white box — invert the logo to a crisp white wordmark that
+   blends with the space theme, with a soft purple glow. */
 .app-dark .brand-logo {
-  background: #eef3f9;
-  padding: 4px 10px;
-  border-radius: 9px;
+  background: transparent;
+  padding: 0;
+  filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(160, 120, 255, 0.55));
+  animation: none;
 }
 
 /* Gentle golden glow pulse (twinkle) — no opacity/scale change, so the wordmark stays steady. */
@@ -357,9 +359,10 @@
   min-height: 40px;
 }
 
-/* When no resume is loaded the aside is hidden; let the hero fill the width. */
+/* When no resume is loaded the aside is hidden; the hero fills edge-to-edge. */
 .app-body.no-aside {
   display: block;
+  padding: 0;
 }
 
 /* ---------------------------------------------------------------- */
@@ -448,6 +451,67 @@
   4% { opacity: 1; }
   18% { transform: translate(620px, 210px) rotate(18deg); opacity: 0; }
   100% { opacity: 0; }
+}
+.shooting-star-3 { top: 55%; left: -8%; animation-delay: 7s; animation-duration: 10s; }
+
+/* Slowly rotating galaxy spiral (ambient background) */
+.galaxy {
+  position: absolute;
+  top: -10%;
+  right: -8%;
+  width: 760px;
+  height: 760px;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(168, 85, 247, 0.16) 40deg,
+      transparent 90deg,
+      rgba(99, 102, 241, 0.14) 150deg,
+      transparent 210deg,
+      rgba(139, 92, 246, 0.16) 300deg,
+      transparent 360deg
+    );
+  filter: blur(28px);
+  opacity: 0.7;
+  animation: spin 90s linear infinite;
+}
+
+/* Rotating background planet (behind the copy) */
+.bg-planet {
+  position: absolute;
+  left: 6%;
+  bottom: 8%;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.35), transparent 40%),
+    repeating-linear-gradient(115deg, #5b3aa8 0 14px, #4a2d90 14px 28px),
+    radial-gradient(circle at 70% 75%, #2a1a5c, #170f38);
+  background-size: auto, 200% 100%, auto;
+  box-shadow: 0 0 50px rgba(124, 77, 255, 0.4), inset -14px -10px 34px rgba(0, 0, 0, 0.6);
+  opacity: 0.55;
+  animation: planetSpin 26s linear infinite, floaty 8s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes planetSpin {
+  to { background-position: 0 0, 200% 0, 0 0; }
+}
+
+/* Real hero illustration (premium astronaut + resume card image) */
+.hero-illustration {
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 24px 70px rgba(124, 77, 255, 0.5));
+  animation: floaty 7s ease-in-out infinite;
 }
 
 /* --- Hero (two columns) --- */
@@ -563,8 +627,13 @@
 .planet-lg {
   width: 230px; height: 230px;
   top: 2%; right: 8%;
-  background: radial-gradient(circle at 35% 30%, #7c4dff, #3b1d8f 60%, #1a0f3d);
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), transparent 42%),
+    repeating-linear-gradient(118deg, #7c4dff 0 18px, #6636e0 18px 36px),
+    radial-gradient(circle at 70% 75%, #2a1560, #1a0f3d);
+  background-size: auto, 200% 100%, auto;
   box-shadow: 0 0 70px rgba(124, 77, 255, 0.5), inset -18px -12px 40px rgba(0, 0, 0, 0.55);
+  animation: planetSpin 24s linear infinite, floaty 7s ease-in-out infinite;
 }
 .planet-sm {
   width: 70px; height: 70px;
@@ -705,7 +774,8 @@
 .feature-card p { margin: 0; font-size: 13.5px; line-height: 1.55; color: #a79fca; }
 
 @media (prefers-reduced-motion: reduce) {
-  .nebula, .stars, .shooting-star, .planet, .astronaut, .resume-card, .orbit-portal { animation: none; }
+  .nebula, .stars, .shooting-star, .planet, .astronaut, .resume-card, .orbit-portal,
+  .galaxy, .bg-planet, .hero-illustration { animation: none; }
 }
 
 @media (max-width: 900px) {
@@ -1012,12 +1082,12 @@
 
 /* ================= DARK THEME (app chrome only; resume page stays white) ================= */
 .app-shell.app-dark {
-  background: #16191d;
+  background: #0a0616;
 }
 
 .app-dark .app-topbar {
-  background: #1f242b;
-  border-bottom-color: #333a42;
+  background: #0d0a1c;
+  border-bottom-color: #241b3f;
 }
 
 .app-dark .app-topbar h1 {

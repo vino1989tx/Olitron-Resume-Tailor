@@ -124,6 +124,16 @@ export class AppComponent implements OnInit {
   private readonly _openMenu = signal<'resume' | 'download' | null>(null);
   // Mobile: the tailor panel is a slide-in drawer that's closed by default.
   private readonly _tailorPanelOpen = signal(false);
+  // Hero illustration: falls back to the CSS-built visual if the image is absent.
+  private readonly _heroImgFailed = signal(false);
+
+  get heroImgFailed(): boolean {
+    return this._heroImgFailed();
+  }
+
+  onHeroImgError(): void {
+    this._heroImgFailed.set(true);
+  }
 
   // Two-way [(ngModel)] fields must be assignable, so they stay plain fields.
   // They only change on input events, which drive change detection on their own.

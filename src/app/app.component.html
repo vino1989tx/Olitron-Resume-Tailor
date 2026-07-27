@@ -302,6 +302,8 @@
         <div class="space-landing">
           <!-- Animated space background -->
           <div class="hero-space" aria-hidden="true">
+            <div class="galaxy"></div>
+            <div class="bg-planet"></div>
             <div class="nebula nebula-1"></div>
             <div class="nebula nebula-2"></div>
             <div class="stars stars-sm"></div>
@@ -309,6 +311,7 @@
             <div class="stars stars-lg"></div>
             <span class="shooting-star"></span>
             <span class="shooting-star shooting-star-2"></span>
+            <span class="shooting-star shooting-star-3"></span>
           </div>
 
           <section class="hero">
@@ -338,34 +341,43 @@
               <p class="hero-note">🔒 Sign in with Google before your resume is parsed.</p>
             </div>
 
-            <!-- Space visual: floating resume card with match ring, planets, orbit -->
+            <!-- Space visual: real illustration if present, else CSS fallback -->
             <div class="hero-visual" aria-hidden="true">
-              <div class="planet planet-lg"></div>
-              <div class="planet planet-sm"><span class="planet-ring"></span></div>
-              <div class="astronaut">🧑‍🚀</div>
+              @if (!heroImgFailed) {
+                <img
+                  class="hero-illustration"
+                  src="hero-astronaut.png"
+                  alt=""
+                  (error)="onHeroImgError()"
+                />
+              } @else {
+                <div class="planet planet-lg"></div>
+                <div class="planet planet-sm"><span class="planet-ring"></span></div>
+                <div class="astronaut">🧑‍🚀</div>
 
-              <div class="resume-card">
-                <div class="rc-head">
-                  <div class="rc-avatar">🧑‍💼</div>
-                  <div>
-                    <div class="rc-name">John Doe</div>
-                    <div class="rc-role">Senior Frontend Developer</div>
+                <div class="resume-card">
+                  <div class="rc-head">
+                    <div class="rc-avatar">🧑‍💼</div>
+                    <div>
+                      <div class="rc-name">John Doe</div>
+                      <div class="rc-role">Senior Frontend Developer</div>
+                    </div>
+                  </div>
+                  <div class="rc-sec">EXPERIENCE</div>
+                  <div class="rc-line"></div>
+                  <div class="rc-line short"></div>
+                  <div class="rc-sec">SKILLS</div>
+                  <div class="rc-line"></div>
+                  <div class="rc-sec">EDUCATION</div>
+                  <div class="rc-line short"></div>
+                  <div class="rc-match">
+                    <div class="rc-match-num">98%</div>
+                    <div class="rc-match-lbl">MATCH</div>
                   </div>
                 </div>
-                <div class="rc-sec">EXPERIENCE</div>
-                <div class="rc-line"></div>
-                <div class="rc-line short"></div>
-                <div class="rc-sec">SKILLS</div>
-                <div class="rc-line"></div>
-                <div class="rc-sec">EDUCATION</div>
-                <div class="rc-line short"></div>
-                <div class="rc-match">
-                  <div class="rc-match-num">98%</div>
-                  <div class="rc-match-lbl">MATCH</div>
-                </div>
-              </div>
 
-              <div class="orbit-portal"></div>
+                <div class="orbit-portal"></div>
+              }
             </div>
           </section>
 
