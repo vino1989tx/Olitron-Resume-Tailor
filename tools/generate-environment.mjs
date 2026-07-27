@@ -6,6 +6,13 @@ const envPath = resolve(root, '.env.local');
 const outputPath = resolve(root, 'src/environments/environment.generated.ts');
 const values = {};
 
+// Seed from the process environment so CI/hosts (e.g. Netlify) can supply the
+// NG_APP_* config as build env vars — there is no .env.local file there.
+for (const [key, value] of Object.entries(process.env)) {
+  if (key.startsWith('NG_APP_') && value) values[key] = value;
+}
+
+// .env.local (local dev) overrides the process env when present.
 try {
   for (const rawLine of readFileSync(envPath, 'utf8').split(/\r?\n/)) {
     const line = rawLine.trim();
