@@ -1,0 +1,1004 @@
+.app-shell {
+  min-height: 100vh;
+  background: #f4f5f7;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px;
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-topbar h1 {
+  margin: 0;
+  font-size: 18px;
+  color: #1f4e78;
+}
+
+/* Sparkly brand title — display font + animated gradient shimmer. */
+.app-topbar .brand-title {
+  margin: 0;
+  font-family: "Righteous", "Segoe UI", Arial, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: linear-gradient(
+    100deg,
+    #1f4e78 0%,
+    #3a9dff 28%,
+    #b06bff 50%,
+    #ffd166 68%,
+    #3a9dff 84%,
+    #1f4e78 100%
+  );
+  background-size: 240% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: brand-sparkle 5s linear infinite;
+}
+
+@keyframes brand-sparkle {
+  to {
+    background-position: 240% center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-topbar .brand-title {
+    animation: none;
+  }
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.brand-logo {
+  display: block;
+  height: 34px;
+  width: auto;
+  flex: 0 0 auto;
+  object-fit: contain;
+  animation: brand-twinkle 3.2s ease-in-out infinite;
+}
+
+/* Dark topbar: the logo's dark "LITRON" text needs a light backing to stay legible. */
+.app-dark .brand-logo {
+  background: #eef3f9;
+  padding: 4px 10px;
+  border-radius: 9px;
+}
+
+/* Gentle golden glow pulse (twinkle) — no opacity/scale change, so the wordmark stays steady. */
+@keyframes brand-twinkle {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px rgba(255, 196, 80, 0.45));
+  }
+  50% {
+    filter: drop-shadow(0 0 9px rgba(255, 214, 120, 0.9));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-logo {
+    animation: none;
+  }
+}
+
+.header-color-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 4px 3px 7px;
+  border: 1px solid #d7dde5;
+  border-radius: 999px;
+  background: #f7f9fc;
+  white-space: nowrap;
+}
+
+.header-color-control:hover {
+  border-color: #b9c4d1;
+}
+
+.header-color-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.header-color-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #4a6076;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.header-color-reset:hover:not(:disabled) {
+  background: #e7edf4;
+  color: #1f4e78;
+}
+
+.header-color-reset:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.header-color-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex: 0 0 auto;
+}
+
+.header-color-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #3a4b5c;
+}
+
+.header-color-input {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.credit-balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #cfe0d3;
+  border-radius: 999px;
+  background: #f2faf4;
+  color: #216e39;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.credit-balance-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2da44e;
+}
+
+.credit-balance-label {
+  font-weight: 500;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Glossy blue buttons (glass-like sheen). */
+.download-btn {
+  position: relative;
+  color: #fff;
+  border: 1px solid #163a5c;
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(
+    to bottom,
+    #5a9be0 0%,
+    #3f7fc9 45%,
+    #2a5f9e 50%,
+    #23527f 55%,
+    #1c4066 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+    0 2px 5px rgba(0, 0, 0, 0.28);
+  transition: filter 0.12s ease, box-shadow 0.12s ease;
+}
+
+.download-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.download-btn:active:not(:disabled) {
+  background: linear-gradient(
+    to bottom,
+    #1c4066 0%,
+    #23527f 45%,
+    #2a5f9e 50%,
+    #3f7fc9 55%,
+    #5a9be0 100%
+  );
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.download-btn:disabled {
+  background: #9db3c7;
+  border-color: #8aa0b6;
+  box-shadow: none;
+  text-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ---- Header dropdowns (Resume / Download) ---- */
+.hdr-dropdown {
+  position: relative;
+  display: inline-flex;
+}
+
+.download-btn-menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.download-btn-menu .caret {
+  font-size: 11px;
+  transition: transform 0.15s ease;
+}
+
+.download-btn-menu.open .caret {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 160px;
+  background: #ffffff;
+  border: 1px solid #e2e6ec;
+  border-radius: 9px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 1000;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1f2a37;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: #eef3f9;
+}
+
+.app-dark .dropdown-menu {
+  background: #2a3038;
+  border-color: #3a424c;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.app-dark .dropdown-item {
+  color: #e6e9ee;
+}
+
+.app-dark .dropdown-item:hover {
+  background: #333b45;
+}
+
+.app-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 24px 32px 60px;
+}
+
+.preview-column {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1240px) {
+  .app-body {
+    flex-direction: column;
+  }
+
+  .tailor-panel {
+    width: 100%;
+    flex: none;
+    position: static;
+  }
+
+  /* Fixed-width resume (816px) must scroll INSIDE its column, not push the page wider. */
+  .preview-column {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Tablet / small: let the top bar wrap onto multiple rows instead of overflowing. */
+@media (max-width: 960px) {
+  .app-topbar {
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+
+  .topbar-brand,
+  .topbar-actions {
+    flex-wrap: wrap;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 620px) {
+  .app-topbar {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .app-topbar h1 {
+    font-size: 16px;
+  }
+
+  .brand-logo {
+    height: 28px;
+  }
+
+  .credit-balance-label {
+    display: none;
+  }
+
+  .download-btn {
+    padding: 7px 11px;
+    font-size: 12px;
+  }
+
+  .app-body {
+    padding: 16px 14px 48px;
+    gap: 16px;
+  }
+
+  /* Keep dropdown menus from spilling off the left edge on narrow screens. */
+  .dropdown-menu {
+    right: auto;
+    left: 0;
+  }
+
+  .header-color-label {
+    display: none;
+  }
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+
+.app-footer {
+  padding: 16px 32px;
+  text-align: center;
+  color: #6b7684;
+  font-size: 12.5px;
+  border-top: 1px solid #e6e9ee;
+  background: #ffffff;
+}
+
+/* ---------- Theme toggle: sliding switch (sun / moon) ---------- */
+.theme-switch {
+  position: relative;
+  width: 56px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.theme-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #17181c;
+  border: 1px solid #2c333b;
+}
+
+.theme-ic {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.theme-ic.moon {
+  left: 7px;
+}
+
+.theme-ic.sun {
+  right: 7px;
+}
+
+.theme-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #545454;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  transition: transform 0.22s ease;
+}
+
+/* Dark mode → knob left (covers the moon, sun shows). Light → knob right. */
+.theme-switch:not(.is-dark) .theme-knob {
+  transform: translateX(28px);
+}
+
+/* ================= DARK THEME (app chrome only; resume page stays white) ================= */
+.app-shell.app-dark {
+  background: #16191d;
+}
+
+.app-dark .app-topbar {
+  background: #1f242b;
+  border-bottom-color: #333a42;
+}
+
+.app-dark .app-topbar h1 {
+  color: #7db2e3;
+}
+
+.app-dark .theme-toggle,
+.app-dark .header-color-control {
+  background: #2a3038;
+  border-color: #3a424c;
+}
+
+.app-dark .theme-toggle:hover,
+.app-dark .header-color-control:hover {
+  background: #333b45;
+  border-color: #4a5460;
+}
+
+.app-dark .header-color-label {
+  color: #c3ccd6;
+}
+
+.app-dark .header-color-reset {
+  color: #aab4bf;
+}
+
+.app-dark .header-color-reset:hover:not(:disabled) {
+  background: #333b45;
+  color: #7db2e3;
+}
+
+.app-dark .credit-balance {
+  background: #14251b;
+  border-color: #26522f;
+  color: #7fd39a;
+}
+
+.app-dark .app-footer {
+  background: #1f242b;
+  border-top-color: #333a42;
+  color: #8b95a1;
+}
+
+/* Left tailor panel */
+.app-dark .tailor-panel {
+  background: #1f242b;
+  border-color: #333a42;
+}
+
+.app-dark .tailor-panel h2 {
+  color: #7db2e3;
+}
+
+.app-dark .field-label {
+  color: #c3ccd6;
+}
+
+.app-dark .header-field label,
+.app-dark .job-role-field label {
+  color: #9aa4af;
+}
+
+.app-dark .tailor-panel textarea,
+.app-dark .tailor-panel select,
+.app-dark .header-field input,
+.app-dark .job-role-field input {
+  background: #14181d;
+  color: #e6e9ee;
+  border-color: #3a424c;
+}
+
+.app-dark .tailor-panel textarea::placeholder {
+  color: #6b7580;
+}
+
+.app-dark .scope-list {
+  border-color: #3a424c;
+}
+
+.app-dark .scope-item {
+  color: #c3ccd6;
+  border-bottom-color: #2c333b;
+}
+
+.app-dark .scope-item-all {
+  background: #2a3038;
+  color: #7db2e3;
+}
+
+.app-dark .ghost-btn {
+  background: #1f242b;
+  color: #7db2e3;
+  border-color: #3a5f86;
+}
+
+.app-dark .ghost-btn:disabled {
+  color: #6b7580;
+  border-color: #3a424c;
+}
+
+.app-dark .divider {
+  border-top-color: #333a42;
+}
+
+/* Empty landing state */
+.app-dark .empty-preview {
+  color: #aab4bf;
+}
+
+.app-dark .empty-preview h2 {
+  color: #7db2e3;
+}
+
+.app-dark .theme-toggle {
+  color: #c3ccd6;
+}
+
+/* ---- Mobile tailor drawer (resume is the main view; panel opens on demand) ---- */
+.tailor-close,
+.tailor-fab {
+  display: none;
+}
+
+.tailor-backdrop {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  /* Resume preview is the primary, full-width view. */
+  .app-body {
+    flex-direction: column;
+  }
+
+  .preview-column {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Tailor panel becomes a slide-in drawer from the left.
+     Scoped with .app-body so it beats tailor-panel.css's base .tailor-panel rule
+     (which loads after this file). */
+  .app-body .tailor-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(340px, 87vw);
+    margin: 0;
+    border-radius: 0;
+    z-index: 1100;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 26px rgba(0, 0, 0, 0.3);
+  }
+
+  .app-body .tailor-panel.open {
+    transform: translateX(0);
+  }
+
+  .tailor-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1090;
+  }
+
+  .tailor-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #eef1f5;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .app-dark .tailor-close {
+    background: #333b45;
+    color: #e6e9ee;
+  }
+
+  /* Floating button to open the drawer (glossy). */
+  .tailor-fab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 1080;
+    padding: 12px 18px;
+    border: 1px solid #163a5c;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+    background: linear-gradient(to bottom, #5a9be0 0%, #3f7fc9 45%, #2a5f9e 50%, #23527f 55%, #1c4066 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      0 6px 18px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+  }
+}
+
+/* ================= AI working overlay (innovative loader) ================= */
+.ai-loader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(12, 16, 22, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.ai-loader-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  min-width: 260px;
+  max-width: 88vw;
+  padding: 28px 34px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+
+.app-dark .ai-loader-card {
+  background: #232830;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+}
+
+.ai-loader-spinner {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+/* Spinning conic-gradient ring (masked to a ring). */
+.ai-loader-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #3a9dff, #b06bff, #ffd166, #3a9dff);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px));
+  animation: ai-spin 1s linear infinite;
+}
+
+/* Pulsing core dot. */
+.ai-loader-core {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3a9dff;
+  box-shadow: 0 0 12px rgba(58, 157, 255, 0.7);
+  animation: ai-pulse 1.2s ease-in-out infinite;
+}
+
+.ai-loader-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f4e78;
+}
+
+.app-dark .ai-loader-title {
+  color: #7db2e3;
+}
+
+.ai-loader-sub {
+  font-size: 12.5px;
+  color: #5a6b7b;
+  max-width: 320px;
+}
+
+.app-dark .ai-loader-sub {
+  color: #9aa4af;
+}
+
+.ai-loader-dots::after {
+  content: '';
+  animation: ai-dots 1.4s steps(1, end) infinite;
+}
+
+@keyframes ai-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ai-pulse {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+}
+
+@keyframes ai-dots {
+  0% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...';
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-loader-ring,
+  .ai-loader-core {
+    animation: none;
+  }
+}
+
+/* ================= API key help ================= */
+.key-help-link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #1f6fd0;
+  font-size: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.key-help-link:hover {
+  color: #17395a;
+}
+
+.app-dark .key-help-link {
+  color: #7db2e3;
+}
+
+.key-help-modal {
+  position: relative;
+  width: min(720px, 94vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 26px 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.app-dark .key-help-modal {
+  background: #232830;
+  color: #e6e9ee;
+}
+
+.key-help-modal h2 {
+  margin: 0 0 6px;
+  color: #1f4e78;
+  font-size: 20px;
+}
+
+.app-dark .key-help-modal h2 {
+  color: #7db2e3;
+}
+
+.key-help-intro {
+  margin: 0 0 18px;
+  font-size: 13px;
+  color: #5a6b7b;
+  line-height: 1.5;
+}
+
+.app-dark .key-help-intro {
+  color: #aab4bf;
+}
+
+.key-help-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.key-help-card {
+  border: 1px solid #e2e6ec;
+  border-radius: 10px;
+  padding: 16px 18px;
+  background: #f8fafc;
+}
+
+.app-dark .key-help-card {
+  border-color: #3a424c;
+  background: #1c2128;
+}
+
+.key-help-card h3 {
+  margin: 0 0 10px;
+  font-size: 14.5px;
+  color: #1f2a37;
+}
+
+.app-dark .key-help-card h3 {
+  color: #e6e9ee;
+}
+
+.key-help-card ol {
+  margin: 0 0 14px;
+  padding-left: 18px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #3a4b5c;
+}
+
+.app-dark .key-help-card ol {
+  color: #c3ccd6;
+}
+
+.key-help-card code {
+  background: rgba(31, 78, 120, 0.1);
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 11.5px;
+}
+
+.app-dark .key-help-card code {
+  background: rgba(125, 178, 227, 0.18);
+}
+
+.key-help-btn {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 7px;
+  background: #1f4e78;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.key-help-btn:hover {
+  background: #17395a;
+}
+
+.key-help-note {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: #6b7684;
+  text-align: center;
+}
+
+.key-help-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: #eef1f5;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.app-dark .key-help-close {
+  background: #333b45;
+  color: #e6e9ee;
+}
+
+@media (max-width: 560px) {
+  .key-help-grid {
+    grid-template-columns: 1fr;
+  }
+}

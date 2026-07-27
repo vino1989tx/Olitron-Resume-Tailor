@@ -1,0 +1,57 @@
+<div class="resume-history-modal">
+  <div class="modal-overlay" (click)="close()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>My Resumes</h2>
+      <button class="close-btn" (click)="close()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      @if (savedResumes().length === 0) {
+        <div class="empty-state">
+          <p class="empty-icon">📋</p>
+          <p class="empty-text">No saved resumes yet</p>
+          <p class="empty-subtext">Upload a resume to get started</p>
+        </div>
+      } @else {
+        <div class="resume-list">
+          @for (resume of savedResumes(); track resume.key) {
+            <div
+              class="resume-item"
+              [class.selected]="selectedKey() === resume.key"
+              (click)="selectResume(resume.key)"
+            >
+              <div class="resume-info">
+                <div class="resume-name">
+                  <span class="icon">📄</span>
+                  <span class="name">{{ resume.name }}</span>
+                </div>
+                <div class="resume-details">
+                  <span class="date">{{ formatDate(resume.timestamp) }}</span>
+                  <span class="candidate">{{ resume.data.name }}, {{ resume.data.title }}</span>
+                </div>
+              </div>
+
+              <div class="resume-actions">
+                <button class="btn-load" (click)="loadResume(resume)" title="Load this resume">
+                  Load
+                </button>
+                <button
+                  class="btn-delete"
+                  (click)="deleteResume(resume.key, $event)"
+                  title="Delete this resume"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="close()">Close</button>
+    </div>
+  </div>
+</div>

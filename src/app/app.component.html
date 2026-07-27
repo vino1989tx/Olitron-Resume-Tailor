@@ -1,0 +1,663 @@
+<div class="app-shell" [class.app-dark]="isDark">
+  <header class="app-topbar">
+    <div class="topbar-brand">
+      <div class="brand">
+        <img src="Olitron-full.png" alt="Olitron" class="brand-logo" />
+        <h1 class="brand-title">ResumeCraft</h1>
+      </div>
+    </div>
+    <div class="topbar-actions">
+            <div
+        class="credit-balance"
+        [attr.aria-label]="'$' + creditBalance.toFixed(4) + ' estimated credit balance'"
+      >
+        <span class="credit-balance-dot" aria-hidden="true"></span>
+        <span class="credit-balance-label">Estimated balance</span>
+        <span>${{ formattedCreditBalance }}</span>
+      </div>
+      <div class="hdr-dropdown">
+        <button
+          type="button"
+          class="download-btn download-btn-menu"
+          [class.open]="resumeMenuOpen"
+          [attr.aria-expanded]="resumeMenuOpen"
+          (click)="toggleResumeMenu()"
+        >
+          📄 Resume <span class="caret" aria-hidden="true">▾</span>
+        </button>
+        @if (resumeMenuOpen) {
+          <div class="dropdown-menu" role="menu">
+            <button
+              type="button"
+              class="dropdown-item"
+              role="menuitem"
+              (click)="openUploadPanel(); closeMenus()"
+            >
+              📤 Upload Resume
+            </button>
+            <button
+              type="button"
+              class="dropdown-item"
+              role="menuitem"
+              (click)="openResumeHistory(); closeMenus()"
+            >
+              📁 Saved Resume
+            </button>
+          </div>
+        }
+      </div>
+      @if (isResumeLoaded) {
+        <button
+          type="button"
+          class="download-btn download-btn-reset"
+          (click)="resetToUploaded()"
+          [disabled]="!canResetToUploaded"
+          title="Discard all edits and restore the uploaded resume"
+        >
+          ↺ Reset Resume
+        </button>
+        <div class="hdr-dropdown">
+          <button
+            type="button"
+            class="download-btn download-btn-menu"
+            [class.open]="downloadMenuOpen"
+            [disabled]="pdfBusy || wordBusy"
+            [attr.aria-expanded]="downloadMenuOpen"
+            (click)="toggleDownloadMenu()"
+          >
+            ⬇ {{ pdfBusy ? 'Preparing PDF...' : wordBusy ? 'Preparing Word...' : 'Download' }}
+            <span class="caret" aria-hidden="true">▾</span>
+          </button>
+          @if (downloadMenuOpen) {
+            <div class="dropdown-menu" role="menu">
+              <button
+                type="button"
+                class="dropdown-item"
+                role="menuitem"
+                (click)="downloadPdf(); closeMenus()"
+              >
+                📄 PDF
+              </button>
+              <button
+                type="button"
+                class="dropdown-item"
+                role="menuitem"
+                (click)="downloadWord(); closeMenus()"
+              >
+                📝 Word
+              </button>
+              
+            </div>
+          }
+        </div>
+      }
+      <button
+        type="button"
+        class="theme-switch"
+        [class.is-dark]="isDark"
+        [title]="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+        [attr.aria-label]="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+        (click)="toggleTheme()"
+      >
+        <span class="theme-track">
+          <span class="theme-ic moon" aria-hidden="true">🌙</span>
+          <span class="theme-ic sun" aria-hidden="true">☀️</span>
+          <span class="theme-knob"></span>
+        </span>
+      </button>
+    </div>
+    
+  </header>
+
+  <!-- Upload Panel Modal -->
+  @if (showUploadPanel) {
+    <div class="modal-backdrop" (click)="onUploadCancelled()">
+      <app-resume-upload
+        (click)="$event.stopPropagation()"
+        (resumeUploaded)="onResumeUploaded($event)"
+        (uploadCancelled)="onUploadCancelled()"
+      ></app-resume-upload>
+    </div>
+  }
+
+  <!-- Resume History Modal -->
+  @if (showResumeHistory) {
+    <app-resume-history
+      (resumeSelected)="onResumeSelected($event)"
+      (closeHistory)="closeResumeHistory()"
+    ></app-resume-history>
+  }
+
+  <!-- API key help popup -->
+  @if (showKeyHelp) {
+    <div class="modal-backdrop" (click)="closeKeyHelp()">
+      <div class="key-help-modal" (click)="$event.stopPropagation()">
+        <button type="button" class="key-help-close" (click)="closeKeyHelp()" aria-label="Close">✕</button>
+        <h2>Get an API key</h2>
+        <p class="key-help-intro">
+          This app uses your own AI key. It's stored only in your browser and sent directly to the
+          provider — never to us. New accounts usually include free starter credit; otherwise add a
+          small amount of billing.
+        </p>
+
+        <div class="key-help-grid">
+          <div class="key-help-card">
+            <h3>🟢 OpenAI (ChatGPT)</h3>
+            <ol>
+              <li>Sign in at <strong>platform.openai.com</strong>.</li>
+              <li>Open <strong>API keys</strong> and click <strong>Create new secret key</strong>.</li>
+              <li>Copy the key (starts with <code>sk-…</code>) — you can only see it once.</li>
+              <li>Ensure you have credit under <strong>Billing</strong>.</li>
+              <li>Paste it in <strong>Resume → Upload Resume → Configure API Keys</strong>.</li>
+            </ol>
+            <a class="key-help-btn" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
+              Generate OpenAI key ↗
+            </a>
+          </div>
+
+          <div class="key-help-card">
+            <h3>🟣 Claude (Anthropic)</h3>
+            <ol>
+              <li>Sign in at <strong>console.anthropic.com</strong>.</li>
+              <li>Open <strong>Settings → API Keys</strong> and click <strong>Create Key</strong>.</li>
+              <li>Copy the key (starts with <code>sk-ant-…</code>).</li>
+              <li>Add credit under <strong>Billing / Plans</strong>.</li>
+              <li>Paste it in <strong>Resume → Upload Resume → Configure API Keys</strong>.</li>
+            </ol>
+            <a class="key-help-btn" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">
+              Generate Claude key ↗
+            </a>
+          </div>
+        </div>
+
+        <p class="key-help-note">🔒 Your key stays in your browser session only.</p>
+      </div>
+    </div>
+  }
+
+  <!-- AI working overlay (tailoring / applying changes) -->
+  @if (status === 'loading' || globalStatus === 'loading') {
+    <div class="ai-loader-overlay" role="status" aria-live="polite">
+      <div class="ai-loader-card">
+        <div class="ai-loader-spinner">
+          <span class="ai-loader-ring"></span>
+          <span class="ai-loader-core"></span>
+        </div>
+        <div class="ai-loader-title">
+          {{ status === 'loading' ? 'Tailoring your resume' : 'Applying changes' }}
+        </div>
+        <div class="ai-loader-sub">
+          {{ progressLabel || 'The AI is crafting ATS-optimized content' }}<span class="ai-loader-dots"></span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="app-body">
+    <aside class="tailor-panel" [class.open]="tailorPanelOpen">
+      <button
+        type="button"
+        class="tailor-close no-print"
+        (click)="closeTailorPanel()"
+        aria-label="Close tailor panel"
+      >✕</button>
+      <h2>Tailor Resume</h2>
+      <p class="panel-subtitle">
+        ATS-Optimized Resume Tailoring ·
+        <button type="button" class="key-help-link" (click)="openKeyHelp()">🔑 How to get an API key</button>
+      </p>
+      <div class="header-color-control">
+        <label class="header-color-picker" title="Change the resume header color">
+          <span class="header-color-swatch" [style.background]="headerColor"></span>
+          <span class="header-color-label">Header color</span>
+          <input
+            type="color"
+            class="header-color-input"
+            [value]="headerColor"
+            (input)="updateHeaderColor($any($event.target).value)"
+          >
+        </label>
+        <button
+          type="button"
+          class="header-color-reset"
+          title="Reset header color to default"
+          [disabled]="isDefaultHeaderColor"
+          (click)="resetHeaderColor()"
+        >↺</button>
+      </div>
+
+      <label class="field-label">Header / Contact Info</label>
+      <div class="header-editor">
+        @for (field of headerFields; track field.key) {
+          <div class="header-field">
+            <label [for]="'header-' + field.key">{{ field.label }}</label>
+            <input
+              [id]="'header-' + field.key"
+              type="text"
+              [ngModel]="resume[field.key]"
+              (ngModelChange)="updateHeaderField(field.key, $event)"
+            >
+          </div>
+        }
+      </div>
+
+      <label class="field-label">Experience Role Titles</label>
+      <div class="job-role-editor">
+        @for (job of resume.experience; track job.company; let jobIndex = $index) {
+          <div class="job-role-field">
+            <label [for]="'job-role-' + jobIndex">{{ job.company }}</label>
+            <input
+              [id]="'job-role-' + jobIndex"
+              type="text"
+              [ngModel]="job.role"
+              (ngModelChange)="updateJobRole(jobIndex, $event)"
+            >
+          </div>
+        }
+      </div>
+
+      <hr class="divider">
+
+      <label class="field-label">Sections to tailor</label>
+      <div class="scope-list">
+        <label class="scope-item scope-item-all">
+          <input type="checkbox" [checked]="allSelected" (change)="toggleAll()">
+          All sections
+        </label>
+        @for (scope of scopes; track scope.id) {
+          <label class="scope-item">
+            <input
+              type="checkbox"
+              [checked]="isSelected(scope.id)"
+              (change)="toggleScope(scope.id)"
+            >
+            {{ scope.label }}
+          </label>
+        }
+      </div>
+
+      <label class="field-label" for="jd-textarea">Job Description</label>
+      <textarea
+        id="jd-textarea"
+        rows="12"
+        placeholder="Paste the target job description here..."
+        [(ngModel)]="jobDescription"
+      ></textarea>
+
+      <div class="button-row">
+        <button type="button" class="primary-btn" (click)="tailorSelected()" [disabled]="!canTailor">
+          {{ status === 'loading' ? (progressLabel || 'Tailoring...') : 'Tailor Resume' }}
+        </button>
+        <button type="button" class="ghost-btn" (click)="resetSelected()" [disabled]="!canReset">
+          Reset Selected
+        </button>
+      </div>
+
+      @if (!hasApiKey) {
+        <div class="status-error">
+          No AI API key set. Add your OpenAI or Anthropic key (stored only in your browser) —
+          <button type="button" class="key-help-link" (click)="openKeyHelp()">see how to get one</button>.
+        </div>
+      }
+      @if (error) {
+        <div class="status-error">{{ error }}</div>
+      }
+      @if (status === 'success' && !error) {
+        <div class="status-success">Bullets updated — review the preview on the right.</div>
+      }
+
+      <hr class="divider">
+
+      <label class="field-label" for="common-changes-textarea">
+        Common changes (applies anywhere in the resume)
+      </label>
+      <textarea
+        id="common-changes-textarea"
+        rows="5"
+        placeholder="e.g. Change email, update years of experience, or replace a skill across the resume..."
+        [(ngModel)]="commonChanges"
+      ></textarea>
+
+      <div class="button-row">
+        <button
+          type="button"
+          class="primary-btn"
+          (click)="applyCommonChanges()"
+          [disabled]="!canApplyCommonChanges"
+        >
+          {{ globalStatus === 'loading' ? 'Applying...' : 'Apply Common Changes' }}
+        </button>
+        <button type="button" class="ghost-btn" (click)="resetAll()">Reset All</button>
+      </div>
+
+      @if (globalError) {
+        <div class="status-error">{{ globalError }}</div>
+      }
+      @if (globalStatus === 'success' && !globalError) {
+        <div class="status-success">Changes applied across the resume — review the preview.</div>
+      }
+    </aside>
+
+    <main class="preview-column">
+      @if (!isResumeLoaded) {
+        <div class="empty-preview">
+          <div class="empty-preview-icon">📄</div>
+          <h2>No resume loaded</h2>
+          <p>Upload a PDF or DOCX resume, or open a previously saved one, to start tailoring.</p>
+          <div class="empty-preview-actions">
+            <button type="button" class="primary-btn" (click)="openUploadPanel()">
+              📤 Upload Resume
+            </button>
+            <button type="button" class="ghost-btn" (click)="openResumeHistory()">
+              📂 Open Saved Resume
+            </button>
+          </div>
+        </div>
+      } @else if (previewVisible) {
+      <div
+        class="resume-page"
+        #resumePreview
+        [style.--resume-accent]="headerColor"
+        [style.--resume-accent-soft]="headerColorSoft"
+      >
+        <div class="edit-hint no-print">
+          ✏️ This is your resume — click any text to edit it, and hover a line to
+          remove ✕ or add ＋ anything you like. Removed parts won’t appear in your download.
+        </div>
+        <div class="resume-header">
+          <div>
+            <h1
+              contenteditable="true"
+              data-placeholder="Full name"
+              (blur)="editInline(['name'], $event)"
+              (keydown)="finishInlineEdit($event)"
+              [textContent]="resume.name"
+            ></h1>
+            <div
+              class="resume-title"
+              contenteditable="true"
+              data-placeholder="Title"
+              (blur)="editInline(['title'], $event)"
+              (keydown)="finishInlineEdit($event)"
+              [textContent]="resume.title"
+            ></div>
+            <div class="resume-contact-line">
+              <span
+                contenteditable="true"
+                data-placeholder="Phone"
+                (blur)="editInline(['phone'], $event)"
+                (keydown)="finishInlineEdit($event)"
+                [textContent]="resume.phone"
+              ></span>
+              &nbsp;|&nbsp;
+              <span
+                contenteditable="true"
+                data-placeholder="Email"
+                (blur)="editInline(['email'], $event)"
+                (keydown)="finishInlineEdit($event)"
+                [textContent]="resume.email"
+              ></span>
+            </div>
+            @for (line of resume.leftExtras; track $index; let i = $index) {
+              <div class="contact-extra removable">
+                <button
+                  type="button"
+                  class="remove-btn no-print"
+                  title="Remove this line"
+                  (click)="removeLeftExtra(i)"
+                >✕</button>
+                <span
+                  contenteditable="true"
+                  data-placeholder="Contact detail"
+                  (blur)="editInline(['leftExtras', i], $event)"
+                  (keydown)="finishInlineEdit($event)"
+                  [textContent]="line"
+                ></span>
+              </div>
+            }
+            <button type="button" class="add-btn no-print" (click)="addLeftExtra()">
+              ＋ Add line
+            </button>
+          </div>
+          <div class="resume-header-right">
+            <div
+              contenteditable="true"
+              data-placeholder="LinkedIn"
+              (blur)="editInline(['linkedin'], $event)"
+              (keydown)="finishInlineEdit($event)"
+              [textContent]="resume.linkedin"
+            ></div>
+            <div
+              contenteditable="true"
+              data-placeholder="Location"
+              (blur)="editInline(['location'], $event)"
+              (keydown)="finishInlineEdit($event)"
+              [textContent]="resume.location"
+            ></div>
+            @for (line of resume.rightExtras; track $index; let i = $index) {
+              <div class="contact-extra contact-extra-right removable">
+                <span
+                  contenteditable="true"
+                  data-placeholder="Detail"
+                  (blur)="editInline(['rightExtras', i], $event)"
+                  (keydown)="finishInlineEdit($event)"
+                  [textContent]="line"
+                ></span>
+                <button
+                  type="button"
+                  class="remove-btn no-print"
+                  title="Remove this line"
+                  (click)="removeRightExtra(i)"
+                >✕</button>
+              </div>
+            }
+            <button type="button" class="add-btn no-print add-btn-right" (click)="addRightExtra()">
+              ＋ Add line
+            </button>
+          </div>
+        </div>
+
+        <div class="section-header">
+          Professional Summary
+          @if (isChanged('summary')) {
+            <span class="tailored-badge">Tailored</span>
+          }
+        </div>
+        <ul class="resume-bullets">
+          @for (line of resume.summary; track $index; let index = $index) {
+            <li class="bullet-row removable" [class.tailored-line]="isBulletChanged('summary', index, line)">
+              <button
+                type="button"
+                class="remove-btn no-print"
+                title="Remove this point"
+                (click)="removeSummaryBullet(index)"
+              >✕</button>
+              <span
+                class="bullet-text"
+                contenteditable="true"
+                data-placeholder="Summary point"
+                (blur)="editInline(['summary', index], $event)"
+                (keydown)="finishInlineEdit($event)"
+                [textContent]="line"
+              ></span>
+            </li>
+          }
+        </ul>
+        <button type="button" class="add-btn no-print" (click)="addSummaryBullet()">
+          ＋ Add summary point
+        </button>
+
+        <div class="section-header">Core Technical Skills</div>
+        <div class="skills-table">
+          @for (row of resume.skills; track $index; let index = $index) {
+            <div class="skills-row removable">
+              <button
+                type="button"
+                class="remove-btn no-print"
+                title="Remove this skill row"
+                (click)="removeSkill(index)"
+              >✕</button>
+              <div
+                class="skills-label"
+                contenteditable="true"
+                data-placeholder="Category"
+                (blur)="editInline(['skills', index, 'label'], $event)"
+                (keydown)="finishInlineEdit($event)"
+                [textContent]="row.label"
+              ></div>
+              <div
+                class="skills-items"
+                contenteditable="true"
+                data-placeholder="Skills"
+                (blur)="editInline(['skills', index, 'items'], $event)"
+                (keydown)="finishInlineEdit($event)"
+                [textContent]="row.items"
+              ></div>
+            </div>
+          }
+        </div>
+        <button type="button" class="add-btn no-print" (click)="addSkill()">
+          ＋ Add skill row
+        </button>
+
+        <div class="section-header">Professional Experience</div>
+        @for (job of resume.experience; track jobIndex; let jobIndex = $index) {
+          <div class="job-block">
+            <div class="job-role removable">
+              <button
+                type="button"
+                class="remove-btn no-print"
+                title="Remove this entire job"
+                (click)="removeJob(jobIndex)"
+              >✕</button>
+              <span
+                class="job-role-text"
+                contenteditable="true"
+                data-placeholder="Role title"
+                (blur)="editInline(['experience', jobIndex, 'role'], $event)"
+                (keydown)="finishInlineEdit($event)"
+                [textContent]="job.role"
+              ></span>
+            </div>
+            <div class="job-meta">
+              <span
+                contenteditable="true"
+                data-placeholder="Company"
+                (blur)="editInline(['experience', jobIndex, 'company'], $event)"
+                (keydown)="finishInlineEdit($event)"
+                [textContent]="job.company"
+              ></span>
+              |
+              <span
+                contenteditable="true"
+                data-placeholder="Duration"
+                (blur)="editInline(['experience', jobIndex, 'duration'], $event)"
+                (keydown)="finishInlineEdit($event)"
+                [textContent]="job.duration"
+              ></span>
+              |
+              <span
+                class="job-clients"
+                contenteditable="true"
+                data-placeholder="Clients"
+                (blur)="editInline(['experience', jobIndex, 'clientsLine'], $event)"
+                (keydown)="finishInlineEdit($event)"
+                [textContent]="job.clientsLine"
+              ></span>
+            </div>
+
+            @for (project of job.projects; track project.id; let projectIndex = $index) {
+              <div class="project-block">
+                <div class="project-heading removable">
+                  <button
+                    type="button"
+                    class="remove-btn no-print"
+                    title="Remove this client / project"
+                    (click)="removeProject(jobIndex, projectIndex)"
+                  >✕</button>
+                  <span
+                    contenteditable="true"
+                    data-placeholder="Client / project"
+                    (blur)="editInline(['experience', jobIndex, 'projects', projectIndex, 'clientLabel'], $event)"
+                    (keydown)="finishInlineEdit($event)"
+                    [textContent]="project.clientLabel"
+                  ></span>@if (project.clientLabel && project.duration) {<span>: </span>}@if (project.duration) {<span class="project-duration">(</span>}<span
+                    class="project-duration"
+                    contenteditable="true"
+                    data-placeholder="Duration"
+                    (blur)="editInline(['experience', jobIndex, 'projects', projectIndex, 'duration'], $event)"
+                    (keydown)="finishInlineEdit($event)"
+                    [textContent]="project.duration"
+                  ></span>@if (project.duration) {<span class="project-duration">)</span>}
+                  @if (isChanged(project.id)) {
+                    <span class="tailored-badge">Tailored</span>
+                  }
+                </div>
+                <ul class="resume-bullets">
+                  @for (bullet of project.bullets; track $index; let bulletIndex = $index) {
+                    <li class="bullet-row removable" [class.tailored-line]="isBulletChanged(project.id, bulletIndex, bullet)">
+                      <button
+                        type="button"
+                        class="remove-btn no-print"
+                        title="Remove this bullet"
+                        (click)="removeBullet(jobIndex, projectIndex, bulletIndex)"
+                      >✕</button>
+                      <span
+                        class="bullet-text"
+                        contenteditable="true"
+                        data-placeholder="Bullet point"
+                        (blur)="editInline(['experience', jobIndex, 'projects', projectIndex, 'bullets', bulletIndex], $event)"
+                        (keydown)="finishInlineEdit($event)"
+                        [textContent]="bullet"
+                      ></span>
+                    </li>
+                  }
+                </ul>
+                <button
+                  type="button"
+                  class="add-btn no-print"
+                  (click)="addBullet(jobIndex, projectIndex)"
+                >＋ Add bullet</button>
+              </div>
+            }
+            <button type="button" class="add-btn no-print" (click)="addProject(jobIndex)">
+              ＋ Add client / project
+            </button>
+          </div>
+        }
+        <button type="button" class="add-btn no-print add-btn-block" (click)="addJob()">
+          ＋ Add job / experience
+        </button>
+
+        <div class="section-header">Education</div>
+        <div
+          class="education-line"
+          contenteditable="true"
+          data-placeholder="Education"
+          (blur)="editInline(['education'], $event)"
+          (keydown)="finishInlineEdit($event)"
+          [textContent]="resume.education"
+        ></div>
+      </div>
+      }
+    </main>
+  </div>
+
+  <!-- Mobile: backdrop + floating button to open the tailor panel drawer -->
+  @if (tailorPanelOpen) {
+    <div class="tailor-backdrop" (click)="closeTailorPanel()"></div>
+  }
+  <button
+    type="button"
+    class="tailor-fab"
+    (click)="toggleTailorPanel()"
+    [attr.aria-expanded]="tailorPanelOpen"
+    aria-label="Open tailor panel"
+  >
+    ✎ Tailor
+  </button>
+
+  <footer class="app-footer">
+    <span>© {{ currentYear }} {{ companyName }}</span>
+  </footer>
+</div>

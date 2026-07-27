@@ -1,0 +1,371 @@
+.resume-page {
+  width: 816px;
+  min-height: 1056px;
+  background: #ffffff;
+  color: #1a1a1a;
+  padding: 40px 48px;
+  margin: 0 auto;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+  font-family: "Calibri", "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  box-sizing: border-box;
+}
+
+.resume-page {
+  --resume-accent: #1f4e78;
+  --resume-accent-soft: #d9e2f3;
+}
+
+.resume-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid var(--resume-accent);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.resume-header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: var(--resume-accent);
+  font-weight: 700;
+}
+
+.resume-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 2px;
+}
+
+.resume-contact-line {
+  font-size: 12.5px;
+  color: #444;
+  margin-top: 4px;
+}
+
+.resume-header-right {
+  text-align: right;
+  font-size: 12.5px;
+  color: #444;
+  white-space: nowrap;
+}
+
+.section-header {
+  background: var(--resume-accent-soft);
+  color: var(--resume-accent);
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  margin: 16px 0 8px;
+}
+
+.resume-bullets {
+  margin: 0 0 4px;
+  padding-left: 20px;
+}
+
+.resume-bullets li {
+  margin-bottom: 4px;
+}
+
+.skills-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #dcdcdc;
+}
+
+.skills-row {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.skills-row:last-child {
+  border-bottom: none;
+}
+
+.skills-label {
+  flex: 0 0 150px;
+  background: #f2f2f2;
+  font-weight: 700;
+  color: var(--resume-accent);
+  padding: 6px 10px;
+  font-size: 12.5px;
+}
+
+.skills-items {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 12.5px;
+}
+
+.job-block {
+  margin-bottom: 14px;
+}
+
+.job-role {
+  font-weight: 700;
+  color: var(--resume-accent);
+  font-size: 13.5px;
+}
+
+.job-meta {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.job-clients {
+  text-decoration: underline;
+}
+
+.project-block {
+  margin: 8px 0 8px 4px;
+}
+
+.project-heading {
+  font-weight: 700;
+  text-decoration: underline;
+  color: #1a1a1a;
+  font-size: 12.5px;
+  margin-bottom: 4px;
+}
+
+.project-duration {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tailored-badge {
+  margin-left: 8px;
+  background: #1f7a3d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: none;
+  padding: 1px 6px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+.resume-bullets li.tailored-line {
+  background: #fff3bf;
+  border-left: 3px solid #d99a00;
+  border-radius: 2px;
+  padding: 2px 6px;
+}
+
+.education-line {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+@media print {
+  .resume-page {
+    box-shadow: none;
+  }
+}
+
+.pdf-export-mode .tailored-badge {
+  display: none !important;
+}
+
+.pdf-export-mode .resume-bullets li.tailored-line {
+  background: transparent !important;
+  border-left: none !important;
+  padding: 0 !important;
+}
+
+[contenteditable="true"] {
+  cursor: text;
+  border-radius: 2px;
+  transition: background-color 0.1s ease;
+}
+
+[contenteditable="true"]:hover {
+  background-color: rgba(31, 78, 120, 0.06);
+}
+
+[contenteditable="true"]:focus {
+  outline: 1.5px solid #1f4e78;
+  background-color: rgba(31, 78, 120, 0.06);
+}
+
+.pdf-export-mode [contenteditable="true"]:hover,
+.pdf-export-mode [contenteditable="true"]:focus {
+  outline: none;
+  background-color: transparent;
+}
+
+.empty-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 60vh;
+  padding: 3rem 2rem;
+  color: #5a6b7b;
+}
+
+.empty-preview-icon {
+  font-size: 3.5rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.85;
+}
+
+.empty-preview h2 {
+  margin: 0 0 0.5rem;
+  color: #1f4e78;
+}
+
+.empty-preview p {
+  margin: 0 0 1.5rem;
+  max-width: 26rem;
+}
+
+.empty-preview-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Keep empty editable fields clickable. An empty contenteditable span collapses
+   to zero width and becomes impossible to click into; give it a small hit area
+   and a faint placeholder so every field in the preview stays editable. */
+.resume-page [contenteditable="true"]:empty {
+  display: inline-block;
+  min-width: 90px;
+  min-height: 1.1em;
+  vertical-align: baseline;
+}
+
+.resume-page [contenteditable="true"]:empty::before {
+  content: attr(data-placeholder);
+  color: #aab2bd;
+  font-style: italic;
+  pointer-events: none;
+}
+
+.pdf-export-mode [contenteditable="true"]:empty {
+  min-width: 0;
+}
+
+.pdf-export-mode [contenteditable="true"]:empty::before {
+  content: '';
+}
+
+/* ---- Inline editing affordances (hint, remove ✕, add ＋). Never printed. ---- */
+.edit-hint {
+  background: #eef4fb;
+  border: 1px dashed #9cc0e6;
+  color: #35577a;
+  font-size: 12px;
+  line-height: 1.4;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+}
+
+/* Rows/blocks that carry a remove handle anchor it in the left margin. */
+.removable {
+  position: relative;
+}
+
+.remove-btn {
+  position: absolute;
+  left: -28px;
+  top: 0.05em;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #c0392b;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.1s ease, background-color 0.1s ease;
+}
+
+.removable:hover > .remove-btn {
+  opacity: 0.7;
+}
+
+.remove-btn:hover {
+  opacity: 1;
+  background: #fdecea;
+}
+
+.bullet-row {
+  list-style: disc;
+}
+
+.bullet-text {
+  display: inline;
+}
+
+.add-btn {
+  display: inline-block;
+  margin: 2px 0 8px;
+  padding: 3px 10px;
+  background: transparent;
+  border: 1px dashed #b7c3d0;
+  border-radius: 5px;
+  color: #4a6076;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background-color 0.1s ease, border-color 0.1s ease;
+}
+
+.add-btn:hover {
+  background: #eef4fb;
+  border-color: #9cc0e6;
+  color: #1f4e78;
+}
+
+.add-btn-block {
+  display: block;
+}
+
+/* Nothing in this group should appear in the exported PDF. */
+.pdf-export-mode .no-print {
+  display: none !important;
+}
+
+/* ---- Extra contact lines under each header half ---- */
+.resume-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.contact-extra {
+  font-size: 12.5px;
+  color: #444;
+}
+
+/* Right-side extra lines: text right-aligned, remove ✕ sits just left of the text. */
+.contact-extra-right {
+  text-align: right;
+}
+
+.resume-page .contact-extra-right .remove-btn {
+  left: auto;
+  right: -24px;
+}
+
+/* The header add buttons stay compact and out of the printed output. */
+.add-btn-right {
+  align-self: flex-end;
+}

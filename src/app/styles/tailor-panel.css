@@ -1,0 +1,180 @@
+.tailor-panel {
+  width: 360px;
+  flex: 0 0 360px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.tailor-panel h2 {
+  margin: 0 0 2px;
+  font-size: 18px;
+  color: #1f4e78;
+}
+
+.panel-subtitle {
+  margin: 0 0 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7684;
+  letter-spacing: 0.2px;
+}
+
+.app-dark .panel-subtitle {
+  color: #9aa4af;
+}
+
+.field-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #333;
+  margin: 14px 0 6px;
+}
+
+.tailor-panel select,
+.tailor-panel textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.scope-list {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.scope-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.scope-item:last-child {
+  border-bottom: none;
+}
+
+.scope-item input {
+  margin-top: 1px;
+}
+
+.scope-item-all {
+  font-weight: 700;
+  color: #1f4e78;
+  background: #f7f9fc;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.primary-btn {
+  flex: 1;
+  color: #fff;
+  border: 1px solid #163a5c;
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(
+    to bottom,
+    #5a9be0 0%,
+    #3f7fc9 45%,
+    #2a5f9e 50%,
+    #23527f 55%,
+    #1c4066 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+    0 2px 5px rgba(0, 0, 0, 0.28);
+  transition: filter 0.12s ease, box-shadow 0.12s ease;
+}
+
+.primary-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.primary-btn:active:not(:disabled) {
+  background: linear-gradient(
+    to bottom,
+    #1c4066 0%,
+    #23527f 45%,
+    #2a5f9e 50%,
+    #3f7fc9 55%,
+    #5a9be0 100%
+  );
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.primary-btn:disabled {
+  background: #9db3c7;
+  border-color: #8aa0b6;
+  box-shadow: none;
+  text-shadow: none;
+  cursor: not-allowed;
+}
+
+.ghost-btn {
+  background: #fff;
+  color: #1f4e78;
+  border: 1px solid #1f4e78;
+  border-radius: 5px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ghost-btn:disabled {
+  color: #aaa;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+.status-error {
+  margin-top: 12px;
+  background: #fdecea;
+  color: #a3261a;
+  border: 1px solid #f5c2bc;
+  border-radius: 5px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+}
+
+.status-success {
+  margin-top: 12px;
+  background: #eaf6ec;
+  color: #1f7a3d;
+  border: 1px solid #bfe3c6;
+  border-radius: 5px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  margin: 22px 0 4px;
+}

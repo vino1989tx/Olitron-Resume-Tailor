@@ -1,0 +1,150 @@
+<div class="resume-upload-panel">
+  <button
+    type="button"
+    class="upload-close-btn"
+    title="Close"
+    aria-label="Close"
+    [disabled]="status() === 'extracting' || status() === 'parsing' || status() === 'saving'"
+    (click)="close()"
+  >✕</button>
+  <div class="upload-header">
+    <h2>Upload Your Resume</h2>
+    <p>Upload a PDF or DOCX resume to get started</p>
+  </div>
+
+  <!-- API Key Input Section -->
+  @if (!apiKeys() || showApiKeyInput()) {
+    <div class="api-key-section">
+      <div class="api-key-form">
+        <h3>Configure API Keys</h3>
+        <p class="api-key-hint">Your API keys are stored locally and never sent to any server.</p>
+
+        <div class="form-group">
+          <label for="openai-key">OpenAI API Key (optional)</label>
+          <input
+            type="password"
+            id="openai-key"
+            [(ngModel)]="openaiApiKey"
+            placeholder="sk-..."
+            class="api-key-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="anthropic-key">Anthropic API Key (optional)</label>
+          <input
+            type="password"
+            id="anthropic-key"
+            [(ngModel)]="anthropicApiKey"
+            placeholder="sk-ant-..."
+            class="api-key-input"
+          />
+        </div>
+
+        <p class="api-key-warning">
+          ⚠️ Provide at least one API key to use AI-powered resume parsing.
+        </p>
+
+        <div class="button-group">
+          <button (click)="saveApiKeys()" class="btn btn-primary">Save API Keys</button>
+          @if (apiKeys()) {
+            <button (click)="showApiKeyInput.set(false)" class="btn btn-secondary">Cancel</button>
+          }
+        </div>
+
+        @if (errorMessage()) {
+          <div class="error-message">{{ errorMessage() }}</div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- File Upload Section -->
+  @if (apiKeys() && !showApiKeyInput()) {
+    <div class="upload-content">
+      <!-- Idle State: File Drop Zone -->
+      @if (status() === 'idle') {
+        <div
+          class="drop-zone"
+          [class.drag-over]="dragOver()"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave()"
+          (drop)="onDropped($event)"
+        >
+          <div class="drop-icon">📄</div>
+          <p class="drop-text">Drag and drop your resume here</p>
+          <p class="drop-subtext">or</p>
+          <label class="file-input-label">
+            <span class="btn btn-primary">Browse Files</span>
+            <input
+              type="file"
+              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              (change)="onFileSelected($event)"
+              style="display: none"
+            />
+          </label>
+          <p class="file-info">PDF or DOCX (Max 10MB)</p>
+
+          @if (selectedFile(); as file) {
+            <div class="selected-file">
+              <p>📁 {{ file.name }}</p>
+              <p class="file-size">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</p>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Error State -->
+      @if (status() === 'error') {
+        <div class="error-state">
+          <div class="error-icon">❌</div>
+          <p class="error-text">{{ errorMessage() }}</p>
+          <div class="button-group">
+            <button (click)="retry()" class="btn btn-primary">Try Again</button>
+            <button (click)="cancel()" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+      }
+
+      <!-- Processing States: Extracting, Parsing, Saving -->
+      @if (status() !== 'idle' && status() !== 'error' && status() !== 'success') {
+        <div class="processing-state">
+          <div class="spinner"></div>
+          <p class="status-text">
+            @if (status() === 'extracting') { <span>Extracting text from resume...</span> }
+            @if (status() === 'parsing') { <span>Analyzing with AI...</span> }
+            @if (status() === 'saving') { <span>Saving your resume...</span> }
+          </p>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="progress()"></div>
+          </div>
+          <p class="progress-text">{{ progress() }}%</p>
+        </div>
+      }
+
+      <!-- Success State -->
+      @if (status() === 'success') {
+        <div class="success-state">
+          <div class="success-icon">✅</div>
+          <p class="success-text">Resume uploaded and parsed successfully!</p>
+          <p class="success-subtext">Loading your resume...</p>
+        </div>
+      }
+
+      <!-- Action Buttons -->
+      @if (status() === 'idle' && selectedFile()) {
+        <div class="button-group">
+          <button (click)="uploadResume()" class="btn btn-primary">Upload & Parse Resume</button>
+          <button (click)="cancel()" class="btn btn-secondary">Cancel</button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- API Key Configuration Button (when already set) -->
+  @if (apiKeys() && !showApiKeyInput()) {
+    <div class="api-key-config">
+      <button (click)="showApiKeyInput.set(true)" class="btn btn-link">Change API Keys</button>
+    </div>
+  }
+</div>

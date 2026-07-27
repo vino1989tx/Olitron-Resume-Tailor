@@ -1,0 +1,13 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color-scheme: light;
+}
+
+app-root {
+  display: block;
+  min-height: 100svh;
+}

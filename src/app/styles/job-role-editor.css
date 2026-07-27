@@ -1,0 +1,26 @@
+.job-role-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.job-role-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.job-role-field label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+}
+
+.job-role-field input {
+  box-sizing: border-box;
+  padding: 7px 9px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-family: inherit;
+}
