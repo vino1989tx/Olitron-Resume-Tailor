@@ -408,65 +408,127 @@
 
 .hero-stage {
   position: relative;
-  height: 340px;
+  height: 360px;
   max-width: 820px;
   margin: 24px auto 8px;
 }
 
-.hero-orb {
+/* Radial spotlight behind the document */
+.hero-glow {
   position: absolute;
   left: 50%;
   top: 50%;
+  width: 460px;
+  height: 460px;
   transform: translate(-50%, -50%);
-  width: 190px;
-  height: 190px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at 50% 40%, #16324f, #0b1626 70%);
-  border: 1px solid rgba(127, 180, 255, 0.35);
-  box-shadow: 0 0 80px 10px rgba(31, 78, 120, 0.45);
-}
-
-.hero-orb-glow {
-  position: absolute;
-  inset: -30% ;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(45, 164, 78, 0.25), transparent 60%);
-  animation: heroPulse 4s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(45, 164, 78, 0.12) 40%, transparent 70%);
+  animation: heroPulse 5s ease-in-out infinite;
 }
 
 @keyframes heroPulse {
-  0%, 100% { opacity: 0.5; transform: scale(0.95); }
-  50% { opacity: 1; transform: scale(1.08); }
+  0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.96); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
 }
 
-.hero-orb-icon {
-  position: relative;
-  font-size: 64px;
-  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.5));
-}
-
-.hero-chip {
+/* Spotlighted resume "page" */
+.hero-doc {
   position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(-3deg);
+  width: 220px;
+  height: 292px;
+  padding: 22px 20px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #eef2f8 100%);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.hero-doc-name {
+  width: 60%;
+  height: 12px;
+  border-radius: 3px;
+  background: #1f4e78;
+  margin-bottom: 7px;
+}
+
+.hero-doc-sub {
+  width: 42%;
+  height: 7px;
+  border-radius: 3px;
+  background: #9db4cf;
+  margin-bottom: 16px;
+}
+
+.hero-doc-bar {
+  width: 46%;
+  height: 8px;
+  border-radius: 3px;
+  background: #cdd9ea;
+  margin: 14px 0 9px;
+}
+
+.hero-doc-line {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f2;
+  margin-bottom: 7px;
+}
+
+.hero-doc-line.short { width: 72%; }
+
+/* Anchored feature callouts (colored borders + dots, like the reference) */
+.hero-tag {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 9px 14px;
   border-radius: 12px;
   font-size: 13.5px;
   font-weight: 600;
   color: #eaf1ff;
-  background: rgba(17, 26, 45, 0.85);
-  border: 1px solid rgba(127, 180, 255, 0.35);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  background: rgba(13, 19, 33, 0.9);
+  border: 1px solid;
   backdrop-filter: blur(4px);
   white-space: nowrap;
   animation: heroFloat 5s ease-in-out infinite;
 }
 
-.hero-chip-tl { left: 4%;  top: 22%; }
-.hero-chip-tr { right: 4%; top: 34%; animation-delay: 0.8s; }
-.hero-chip-bl { left: 8%;  bottom: 20%; animation-delay: 1.6s; }
-.hero-chip-br { right: 6%; bottom: 12%; animation-delay: 2.4s; }
+.hero-tag-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.hero-tag-red {
+  left: 2%;
+  top: 20%;
+  border-color: rgba(239, 68, 68, 0.7);
+  box-shadow: 0 8px 26px rgba(239, 68, 68, 0.25);
+}
+.hero-tag-red .hero-tag-dot { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+
+.hero-tag-blue {
+  right: 0%;
+  top: 46%;
+  border-color: rgba(59, 130, 246, 0.7);
+  box-shadow: 0 8px 26px rgba(59, 130, 246, 0.25);
+  animation-delay: 1s;
+}
+.hero-tag-blue .hero-tag-dot { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+
+.hero-tag-green {
+  left: 50%;
+  bottom: 4%;
+  transform: translateX(-50%);
+  border-color: rgba(34, 197, 94, 0.7);
+  box-shadow: 0 8px 26px rgba(34, 197, 94, 0.25);
+  animation: none;
+}
+.hero-tag-green .hero-tag-dot { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
 
 @keyframes heroFloat {
   0%, 100% { transform: translateY(0); }
@@ -535,6 +597,25 @@
   border-radius: 16px;
   background: linear-gradient(180deg, rgba(31, 78, 120, 0.18), rgba(17, 26, 45, 0.5));
   border: 1px solid rgba(127, 180, 255, 0.18);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.hero-card:hover {
+  transform: translateY(-3px);
+}
+
+/* Distinct accent per card (blue / purple / green), like the reference. */
+.hero-card:nth-child(1) {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.16), rgba(17, 26, 45, 0.5));
+  border-color: rgba(59, 130, 246, 0.28);
+}
+.hero-card:nth-child(2) {
+  background: linear-gradient(180deg, rgba(139, 92, 246, 0.16), rgba(17, 26, 45, 0.5));
+  border-color: rgba(139, 92, 246, 0.28);
+}
+.hero-card:nth-child(3) {
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.14), rgba(17, 26, 45, 0.5));
+  border-color: rgba(34, 197, 94, 0.26);
 }
 
 .hero-card-icon {
