@@ -1061,6 +1061,37 @@
   overflow-y: auto;
 }
 
+/* Space-themed Google sign-in modal (from the landing CTAs). */
+.login-modal {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  padding: 34px 30px 30px;
+  border-radius: 20px;
+  color: #ece9ff;
+  background:
+    radial-gradient(600px 300px at 50% 0%, rgba(139, 92, 246, 0.25), transparent 70%),
+    linear-gradient(180deg, #1a1440, #120e2c);
+  border: 1px solid rgba(139, 122, 255, 0.35);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), 0 0 50px rgba(124, 77, 255, 0.3);
+}
+.login-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  border: none;
+  background: transparent;
+  color: #a99fce;
+  font-size: 16px;
+  cursor: pointer;
+}
+.login-modal-logo { height: 40px; width: auto; object-fit: contain; margin-bottom: 14px; }
+.login-modal-title { margin: 0 0 8px; font-size: 21px; font-weight: 800; color: #f4f1ff; }
+.login-modal-sub { margin: 0 auto 22px; max-width: 300px; font-size: 14px; line-height: 1.55; color: #b3accf; }
+.login-modal-btn { display: flex; justify-content: center; min-height: 44px; }
+.login-modal-note { margin: 18px 0 0; font-size: 12px; color: #8b83ad; }
+
 
 .app-footer {
   padding: 16px 32px;

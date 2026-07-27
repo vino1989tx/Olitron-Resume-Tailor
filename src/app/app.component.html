@@ -1,4 +1,5 @@
 <div class="app-shell" [class.app-dark]="isDark">
+  @if (loggedIn) {
   <header class="app-topbar">
     <div class="topbar-brand">
       <div class="brand">
@@ -25,8 +26,6 @@
           <span class="user-email">{{ u.email }}</span>
           <button type="button" class="signout-btn" (click)="auth.signOut()">Sign out</button>
         </div>
-      } @else if (showHeaderSignIn) {
-        <div class="header-login" #loginButton></div>
       }
       @if (isResumeLoaded) {
         <div class="hdr-dropdown">
@@ -119,8 +118,25 @@
         </span>
       </button>
     </div>
-    
+
   </header>
+  }
+
+  <!-- Google sign-in modal (from the landing CTAs) -->
+  @if (showLogin) {
+    <div class="modal-backdrop" (click)="closeLogin()">
+      <div class="login-modal" (click)="$event.stopPropagation()">
+        <button type="button" class="login-modal-close" (click)="closeLogin()" aria-label="Close">✕</button>
+        <img src="Olitron-full.png" alt="Olitron" class="login-modal-logo" />
+        <h2 class="login-modal-title">Sign in to continue</h2>
+        <p class="login-modal-sub">
+          Connect your Google account to optimize and tailor your resume.
+        </p>
+        <div class="login-modal-btn" #loginModalHost></div>
+        <p class="login-modal-note">🔒 We only use your account to sign you in.</p>
+      </div>
+    </div>
+  }
 
   <!-- Upload Panel Modal -->
   @if (showUploadPanel) {
@@ -340,10 +356,10 @@
                 </span>
               </div>
               <div class="hero-actions">
-                <button type="button" class="hero-cta" (click)="openUploadPanel()">
+                <button type="button" class="hero-cta" (click)="startOptimize()">
                   Optimize My Resume 🚀
                 </button>
-                <button type="button" class="hero-cta-ghost" (click)="openResumeHistory()">
+                <button type="button" class="hero-cta-ghost" (click)="startOpenSaved()">
                   ▷ Open Saved Resume
                 </button>
               </div>

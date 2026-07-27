@@ -64,7 +64,9 @@ export class AppComponent implements OnInit {
   private readonly storageService = inject(ResumeStorageService);
   readonly auth = inject(AuthService);
 
-  private readonly loginButton = viewChild<ElementRef<HTMLElement>>('loginButton');
+  private readonly loginModalHost = viewChild<ElementRef<HTMLElement>>('loginModalHost');
+  // What to do right after a successful sign-in (the action the user clicked).
+  private pendingAction: 'upload' | 'history' | null = null;
 
   private readonly resumePreview = viewChild<ElementRef<HTMLElement>>('resumePreview');
 
@@ -78,14 +80,62 @@ export class AppComponent implements OnInit {
   ] as const;
 
   constructor() {
-    // Render the header "Sign in with Google" button whenever it's shown
-    // (auth enabled, GIS ready, and the user isn't signed in yet).
     effect(() => {
-      const host = this.loginButton();
-      if (this.auth.enabled && this.auth.ready() && !this.auth.user() && host) {
+      const host = this.loginModalHost();
+      const signedIn = !!this.auth.user();
+      const modalOpen = this._showLogin();
+
+      if (signedIn) {
+        // Sign-in just succeeded: close the modal and run the pending action.
+        if (modalOpen) this._showLogin.set(false);
+        const action = this.pendingAction;
+        if (action) {
+          this.pendingAction = null;
+          if (action === 'upload') this.openUploadPanel();
+          else this.openResumeHistory();
+        }
+        return;
+      }
+
+      // Render the Google button into the login modal while it's open.
+      if (modalOpen && this.auth.ready() && host) {
         this.auth.renderButton(host.nativeElement);
       }
     });
+  }
+
+  // True when the user may use the app: signed in, or auth not configured (dev).
+  get loggedIn(): boolean {
+    return this.auth.enabled ? !!this.auth.user() : true;
+  }
+
+  get showLogin(): boolean {
+    return this._showLogin();
+  }
+
+  closeLogin(): void {
+    this._showLogin.set(false);
+    this.pendingAction = null;
+  }
+
+  // Hero "Optimize My Resume": sign in first (if needed), then open upload.
+  startOptimize(): void {
+    if (this.loggedIn) {
+      this.openUploadPanel();
+    } else {
+      this.pendingAction = 'upload';
+      this._showLogin.set(true);
+    }
+  }
+
+  // Hero "Open Saved Resume": sign in first (if needed), then open history.
+  startOpenSaved(): void {
+    if (this.loggedIn) {
+      this.openResumeHistory();
+    } else {
+      this.pendingAction = 'history';
+      this._showLogin.set(true);
+    }
   }
 
   // True when the managed AI backend is configured; all AI runs server-side.
@@ -93,10 +143,6 @@ export class AppComponent implements OnInit {
     return !!(environment.apiBaseUrl || '').trim();
   }
 
-  // True when Google auth is enabled but nobody is signed in yet (show header sign-in).
-  get showHeaderSignIn(): boolean {
-    return this.auth.enabled && !this.auth.user();
-  }
   readonly defaultHeaderColor = DEFAULT_HEADER_COLOR;
   readonly companyName = 'Olitron';
   readonly currentYear = new Date().getFullYear();
@@ -124,6 +170,8 @@ export class AppComponent implements OnInit {
   private readonly _openMenu = signal<'resume' | 'download' | null>(null);
   // Mobile: the tailor panel is a slide-in drawer that's closed by default.
   private readonly _tailorPanelOpen = signal(false);
+  // Google sign-in modal (opened from the landing CTAs).
+  private readonly _showLogin = signal(false);
   // Hero illustration: falls back to the CSS-built visual if the image is absent.
   private readonly _heroImgFailed = signal(false);
 
