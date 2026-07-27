@@ -375,9 +375,9 @@
   overflow: hidden;
   color: #e9e6ff;
   background:
-    radial-gradient(1200px 620px at 82% 8%, rgba(139, 92, 246, 0.28), transparent 60%),
-    radial-gradient(900px 520px at 8% 28%, rgba(59, 130, 246, 0.18), transparent 60%),
-    linear-gradient(180deg, #0a0616 0%, #0e0a24 45%, #090614 100%);
+    radial-gradient(1200px 620px at 82% 8%, rgba(139, 92, 246, 0.3), transparent 60%),
+    radial-gradient(900px 520px at 8% 28%, rgba(79, 70, 200, 0.22), transparent 60%),
+    linear-gradient(180deg, #141033 0%, #191340 45%, #120e2c 100%);
 }
 
 /* --- Animated space background --- */
@@ -1127,12 +1127,12 @@
 
 /* ================= DARK THEME (app chrome only; resume page stays white) ================= */
 .app-shell.app-dark {
-  background: #0a0616;
+  background: #141033;
 }
 
 .app-dark .app-topbar {
-  background: #0d0a1c;
-  border-bottom-color: #241b3f;
+  background: #141033;
+  border-bottom-color: rgba(139, 122, 255, 0.16);
 }
 
 .app-dark .app-topbar h1 {
