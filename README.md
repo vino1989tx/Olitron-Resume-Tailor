@@ -13,7 +13,7 @@ as PDF or Word.
    # optional: NG_APP_ANTHROPIC_API_KEY=sk-ant-...
    # optional overrides:
    # NG_APP_OPENAI_MODEL=gpt-4.1            (tailoring model)
-   # NG_APP_OPENAI_PARSE_MODEL=gpt-4o-mini  (fast/cheap upload-parse model)
+   # NG_APP_OPENAI_PARSE_MODEL=gpt-4.1-mini  (fast/cheap upload-parse model)
    ```
 
 2. Install and run:

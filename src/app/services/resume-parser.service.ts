@@ -27,7 +27,9 @@ export class ResumeParserService {
       const result = await callModelWithFallback({
         apiKey: apiKeys,
         prompt,
-        maxTokens: 8000,
+        // Long resumes produce large JSON; keep headroom so the output is never
+        // truncated mid-structure (which would drop trailing jobs/bullets).
+        maxTokens: 16000,
         // Parsing just extracts fields — use a fast/cheap model so uploads of
         // long resumes finish quickly. Tailoring still uses the primary model.
         openAiModel: environment.openAiParseModel,
@@ -49,16 +51,25 @@ export class ResumeParserService {
     return `You are an expert resume parser. Parse the following resume text and extract structured information matching this JSON schema.
 
 IMPORTANT INSTRUCTIONS:
-1. Extract ALL information from the resume text provided
+1. Extract ALL information from the resume text provided. COMPLETENESS IS CRITICAL:
+   include EVERY job, EVERY client engagement, and EVERY bullet point. Do NOT
+   summarize, skip, merge, or truncate any content — even if the resume is long.
 2. Return ONLY valid JSON matching the exact schema below - no markdown, no explanations, no code fences
 3. If a field is not found in the resume, use sensible defaults:
    - Empty strings for text fields
    - Empty arrays for arrays
    - Empty objects for skills array with label/items structure
 4. For experience jobs, preserve the exact role, company, duration, and bullets from the resume
-5. For skills, group by category (Programming Languages, Frameworks, Cloud, Databases, etc.)
-6. For summary, parse into individual bullet points
-7. Preserve phone, email, location, LinkedIn URL exactly as written
+5. A SINGLE job/company often lists MULTIPLE client engagements under one role
+   (e.g. "Info Services | Nov 2022 – Present" followed by sub-headers like
+   "United Airlines: (Nov 2025 - Present)" and "Norwegian Cruise Line: (2022 - 2025)").
+   For each such engagement, create a SEPARATE object in that job's "projects" array,
+   with its own clientLabel, duration, and ALL of its bullets. Never drop or combine
+   engagements — if a job shows two client sub-sections, the projects array MUST have
+   two entries, each with the full bullet list for that client.
+6. For skills, group by category (Programming Languages, Frameworks, Cloud, Databases, etc.)
+7. For summary, parse into individual bullet points
+8. Preserve phone, email, location, LinkedIn URL exactly as written
 
 REQUIRED JSON SCHEMA:
 {

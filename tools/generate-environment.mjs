@@ -47,7 +47,7 @@ export const environment = {
   anthropicApiKey: ${keyValue('NG_APP_ANTHROPIC_API_KEY')},
   openAiApiKey: ${keyValue('NG_APP_OPENAI_API_KEY')},
   openAiModel: ${stringValue('NG_APP_OPENAI_MODEL', 'gpt-4.1')},
-  openAiParseModel: ${stringValue('NG_APP_OPENAI_PARSE_MODEL', 'gpt-4o-mini')},
+  openAiParseModel: ${stringValue('NG_APP_OPENAI_PARSE_MODEL', 'gpt-4.1-mini')},
   openAiInputPrice: ${numberValue('NG_APP_OPENAI_INPUT_PRICE', 2)},
   openAiCachedInputPrice: ${numberValue('NG_APP_OPENAI_CACHED_INPUT_PRICE', 0.5)},
   openAiOutputPrice: ${numberValue('NG_APP_OPENAI_OUTPUT_PRICE', 8)},
