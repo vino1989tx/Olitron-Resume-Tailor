@@ -12,56 +12,8 @@
     <p>Upload a PDF or DOCX resume to get started</p>
   </div>
 
-  <!-- API Key Input Section -->
-  @if (!apiKeys() || showApiKeyInput()) {
-    <div class="api-key-section">
-      <div class="api-key-form">
-        <h3>Configure API Keys</h3>
-        <p class="api-key-hint">Your API keys are stored locally and never sent to any server.</p>
-
-        <div class="form-group">
-          <label for="openai-key">OpenAI API Key (optional)</label>
-          <input
-            type="password"
-            id="openai-key"
-            [(ngModel)]="openaiApiKey"
-            placeholder="sk-..."
-            class="api-key-input"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="anthropic-key">Anthropic API Key (optional)</label>
-          <input
-            type="password"
-            id="anthropic-key"
-            [(ngModel)]="anthropicApiKey"
-            placeholder="sk-ant-..."
-            class="api-key-input"
-          />
-        </div>
-
-        <p class="api-key-warning">
-          ⚠️ Provide at least one API key to use AI-powered resume parsing.
-        </p>
-
-        <div class="button-group">
-          <button (click)="saveApiKeys()" class="btn btn-primary">Save API Keys</button>
-          @if (apiKeys()) {
-            <button (click)="showApiKeyInput.set(false)" class="btn btn-secondary">Cancel</button>
-          }
-        </div>
-
-        @if (errorMessage()) {
-          <div class="error-message">{{ errorMessage() }}</div>
-        }
-      </div>
-    </div>
-  }
-
   <!-- File Upload Section -->
-  @if (apiKeys() && !showApiKeyInput()) {
-    <div class="upload-content">
+  <div class="upload-content">
       <!-- Idle State: File Drop Zone -->
       @if (status() === 'idle') {
         <div
@@ -138,13 +90,5 @@
           <button (click)="cancel()" class="btn btn-secondary">Cancel</button>
         </div>
       }
-    </div>
-  }
-
-  <!-- API Key Configuration Button (when already set) -->
-  @if (apiKeys() && !showApiKeyInput()) {
-    <div class="api-key-config">
-      <button (click)="showApiKeyInput.set(true)" class="btn btn-link">Change API Keys</button>
-    </div>
-  }
+  </div>
 </div>

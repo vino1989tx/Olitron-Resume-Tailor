@@ -1,10 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ResumeUploadService } from '../services/resume-upload.service';
 import { ResumeParserService } from '../services/resume-parser.service';
 import { ResumeStorageService } from '../services/resume-storage.service';
 import { ResumeData } from '../data/resume-data';
-import { ApiKeys, resolveApiKeys } from '../services/ai-client';
 
 type UploadStatus = 'idle' | 'extracting' | 'parsing' | 'saving' | 'success' | 'error';
 
@@ -16,7 +15,7 @@ type UploadStatus = 'idle' | 'extracting' | 'parsing' | 'saving' | 'success' | '
   templateUrl: './resume-upload.component.html',
   styleUrls: ['./resume-upload.component.css'],
 })
-export class ResumeUploadComponent implements OnInit {
+export class ResumeUploadComponent {
   private uploadService = inject(ResumeUploadService);
   private parserService = inject(ResumeParserService);
   private storageService = inject(ResumeStorageService);
@@ -29,35 +28,7 @@ export class ResumeUploadComponent implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly selectedFile = signal<File | null>(null);
   readonly progress = signal(0);
-  readonly apiKeys = signal<ApiKeys | null>(null);
-  readonly showApiKeyInput = signal(false);
   readonly dragOver = signal(false);
-
-  // Two-way [(ngModel)] fields stay plain (assignable); input events drive updates.
-  openaiApiKey = '';
-  anthropicApiKey = '';
-
-  ngOnInit() {
-    // Try to load API keys from environment or sessionStorage
-    const envKeys = resolveApiKeys();
-    if (envKeys.anthropic || envKeys.openai) {
-      this.apiKeys.set(envKeys);
-    }
-
-    if (!this.apiKeys()) {
-      const stored = sessionStorage.getItem('apiKeys');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored) as ApiKeys;
-          this.apiKeys.set(parsed);
-          this.openaiApiKey = parsed.openai || '';
-          this.anthropicApiKey = parsed.anthropic || '';
-        } catch {
-          // Ignore parse errors
-        }
-      }
-    }
-  }
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
@@ -98,32 +69,10 @@ export class ResumeUploadComponent implements OnInit {
     this.progress.set(0);
   }
 
-  saveApiKeys() {
-    if (!this.openaiApiKey && !this.anthropicApiKey) {
-      this.errorMessage.set('Please provide at least one API key');
-      return;
-    }
-
-    const keys: ApiKeys = {
-      openai: this.openaiApiKey.trim(),
-      anthropic: this.anthropicApiKey.trim(),
-    };
-    this.apiKeys.set(keys);
-    sessionStorage.setItem('apiKeys', JSON.stringify(keys));
-    this.showApiKeyInput.set(false);
-    this.errorMessage.set(null);
-  }
-
   async uploadResume() {
     const file = this.selectedFile();
     if (!file) {
       this.errorMessage.set('Please select a file');
-      return;
-    }
-
-    const keys = this.apiKeys();
-    if (!keys || (!keys.openai && !keys.anthropic)) {
-      this.showApiKeyInput.set(true);
       return;
     }
 
@@ -133,10 +82,10 @@ export class ResumeUploadComponent implements OnInit {
       this.progress.set(20);
       const extractedText = await this.uploadService.extractResumeText(file);
 
-      // Step 2: Parse with AI
+      // Step 2: Parse with AI (backend holds the key; user must be signed in)
       this.status.set('parsing');
       this.progress.set(50);
-      const resumeData = await this.parserService.parseResumeText(extractedText, keys);
+      const resumeData = await this.parserService.parseResumeText(extractedText);
 
       // Step 3: Save to storage
       this.status.set('saving');

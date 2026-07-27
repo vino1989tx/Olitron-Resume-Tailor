@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  effect,
   ElementRef,
   HostListener,
   inject,
@@ -13,12 +14,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { environment } from '../environments/environment.generated';
 import { emptyResumeData, ResumeData, withHeaderExtras } from './data/resume-data';
-import {
-  ApiKeys,
-  applyGlobalChangesWithClaude,
-  resolveApiKeys,
-  tailorBulletsWithClaude,
-} from './services/ai-client';
+import { applyGlobalChanges, tailorBullets } from './services/ai-client';
 import { exportElementToPdf } from './services/pdf-export';
 import {
   getAllScopes,
@@ -32,10 +28,10 @@ import { exportResumeToDocx } from './services/word-export';
 import { ResumeUploadComponent } from './components/resume-upload.component';
 import { ResumeHistoryComponent } from './components/resume-history.component';
 import { ResumeStorageService } from './services/resume-storage.service';
+import { AuthService } from './services/auth.service';
 
 const CURRENT_RESUME_KEY_STORAGE = 'resume-tailor-current-key';
 const HEADER_COLOR_STORAGE = 'resume-tailor-header-color';
-const CREDIT_BALANCE_STORAGE = 'resume-tailor-credit-balance';
 const THEME_STORAGE = 'resume-tailor-theme';
 const DEFAULT_HEADER_COLOR = '#1f4e78';
 
@@ -66,6 +62,9 @@ export class AppComponent implements OnInit {
   // ChangeDetectorRef is retained only for the preview destroy/recreate trick.
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly storageService = inject(ResumeStorageService);
+  readonly auth = inject(AuthService);
+
+  private readonly loginButton = viewChild<ElementRef<HTMLElement>>('loginButton');
 
   private readonly resumePreview = viewChild<ElementRef<HTMLElement>>('resumePreview');
 
@@ -78,9 +77,25 @@ export class AppComponent implements OnInit {
     { key: 'location', label: 'Location' },
   ] as const;
 
-  // Resolved live so a key entered at runtime (production) is picked up without a reload.
-  get apiKeys(): ApiKeys {
-    return resolveApiKeys();
+  constructor() {
+    // When the login gate is visible and Google Identity Services is ready,
+    // render the official "Sign in with Google" button into its container.
+    effect(() => {
+      const host = this.loginButton();
+      if (this.auth.enabled && this.auth.ready() && !this.auth.user() && host) {
+        this.auth.renderButton(host.nativeElement);
+      }
+    });
+  }
+
+  // True when the managed AI backend is configured; all AI runs server-side.
+  get usesBackend(): boolean {
+    return !!(environment.apiBaseUrl || '').trim();
+  }
+
+  // Whether the app should block on Google sign-in (auth configured but signed out).
+  get loginRequired(): boolean {
+    return this.auth.enabled && !this.auth.user();
   }
   readonly defaultHeaderColor = DEFAULT_HEADER_COLOR;
   readonly companyName = 'Olitron';
@@ -101,7 +116,6 @@ export class AppComponent implements OnInit {
   private readonly _globalError = signal('');
   private readonly _pdfBusy = signal(false);
   private readonly _wordBusy = signal(false);
-  private readonly _creditBalance = signal(this.getSavedCreditBalance());
   private readonly _headerColor = signal(this.getSavedHeaderColor());
   private readonly _showUploadPanel = signal(false);
   private readonly _showResumeHistory = signal(false);
@@ -110,8 +124,6 @@ export class AppComponent implements OnInit {
   private readonly _openMenu = signal<'resume' | 'download' | null>(null);
   // Mobile: the tailor panel is a slide-in drawer that's closed by default.
   private readonly _tailorPanelOpen = signal(false);
-  // "How to get an API key" help popup.
-  private readonly _showKeyHelp = signal(false);
 
   // Two-way [(ngModel)] fields must be assignable, so they stay plain fields.
   // They only change on input events, which drive change detection on their own.
@@ -151,9 +163,6 @@ export class AppComponent implements OnInit {
   }
   get wordBusy(): boolean {
     return this._wordBusy();
-  }
-  get creditBalance(): number {
-    return this._creditBalance();
   }
   get headerColor(): string {
     return this._headerColor();
@@ -196,10 +205,6 @@ export class AppComponent implements OnInit {
     return getAllScopes(this.resume);
   }
 
-  get hasApiKey(): boolean {
-    return Boolean(this.apiKeys.anthropic || this.apiKeys.openai);
-  }
-
   // True once a resume has been uploaded or opened; false on the empty landing state.
   get isResumeLoaded(): boolean {
     const r = this.resume;
@@ -225,13 +230,13 @@ export class AppComponent implements OnInit {
     return (
       this.status !== 'loading' &&
       Boolean(this.jobDescription.trim()) &&
-      this.hasApiKey &&
+      this.usesBackend &&
       this.selectedScopeIds.length > 0
     );
   }
 
   get canApplyCommonChanges(): boolean {
-    return this.globalStatus !== 'loading' && Boolean(this.commonChanges.trim()) && this.hasApiKey;
+    return this.globalStatus !== 'loading' && Boolean(this.commonChanges.trim()) && this.usesBackend;
   }
 
   get canReset(): boolean {
@@ -243,13 +248,6 @@ export class AppComponent implements OnInit {
           JSON.stringify(getScopeBullets(this.resume, scopeId)),
       )
     );
-  }
-
-  get formattedCreditBalance(): string {
-    return this.creditBalance.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 4,
-    });
   }
 
   updateHeaderField(field: string, value: string): void {
@@ -440,12 +438,10 @@ export class AppComponent implements OnInit {
         const currentBullets = getScopeBullets(this.resume, scopeId);
         if (!currentBullets) throw new Error(`Could not find the "${scopeLabel}" section.`);
 
-        const updatedBullets = await tailorBulletsWithClaude({
-          apiKey: this.apiKeys,
+        const updatedBullets = await tailorBullets({
           clientLabel: scopeLabel,
           currentBullets,
           jobDescription: this.jobDescription,
-          onUsage: (usage) => this.recordOpenAIUsage(usage.estimatedCost),
         });
         const updatedResume = cloneResume(this.resume);
         setScopeBullets(updatedResume, scopeId, [...updatedBullets]);
@@ -465,6 +461,7 @@ export class AppComponent implements OnInit {
     this._changedScopeIds.update((ids) => [...new Set([...ids, ...newlyChanged])]);
     this._status.set('success');
     this._progressLabel.set('');
+    void this.auth.refreshUsage();
   }
 
   resetSelected(): void {
@@ -489,11 +486,9 @@ export class AppComponent implements OnInit {
 
     try {
       const previousResume = this.resume;
-      const updated = await applyGlobalChangesWithClaude({
-        apiKey: this.apiKeys,
+      const updated = await applyGlobalChanges({
         resume: previousResume,
         instructions: this.commonChanges,
-        onUsage: (usage) => this.recordOpenAIUsage(usage.estimatedCost),
       });
       const touchedScopes: string[] = [];
 
@@ -513,6 +508,7 @@ export class AppComponent implements OnInit {
       this._changedScopeIds.update((ids) => [...new Set([...ids, ...touchedScopes])]);
       this._globalStatus.set('success');
       this.rerenderPreview();
+      void this.auth.refreshUsage();
     } catch (error: unknown) {
       this._globalError.set(
         error instanceof Error ? error.message : 'Something went wrong calling the AI service.',
@@ -595,18 +591,6 @@ export class AppComponent implements OnInit {
     this._tailorPanelOpen.set(false);
   }
 
-  get showKeyHelp(): boolean {
-    return this._showKeyHelp();
-  }
-
-  openKeyHelp(): void {
-    this._showKeyHelp.set(true);
-  }
-
-  closeKeyHelp(): void {
-    this._showKeyHelp.set(false);
-  }
-
   // Close any open header dropdown when clicking outside the dropdowns.
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -645,6 +629,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.applyColorScheme(this.theme);
+    this.auth.init();
     this.restoreLastResume();
   }
 
@@ -732,15 +717,4 @@ export class AppComponent implements OnInit {
     return /^#[0-9a-fA-F]{6}$/.test(saved) ? saved : DEFAULT_HEADER_COLOR;
   }
 
-  private getSavedCreditBalance(): number {
-    const configuredBalance = environment.initialCreditBalance;
-    const savedBalance = Number.parseFloat(globalThis.localStorage?.getItem(CREDIT_BALANCE_STORAGE) ?? '');
-    return Number.isFinite(savedBalance) && savedBalance >= 0 ? savedBalance : configuredBalance;
-  }
-
-  private recordOpenAIUsage(estimatedCost: number): void {
-    const next = Math.max(0, this.creditBalance - estimatedCost);
-    this._creditBalance.set(next);
-    globalThis.localStorage?.setItem(CREDIT_BALANCE_STORAGE, String(next));
-  }
 }

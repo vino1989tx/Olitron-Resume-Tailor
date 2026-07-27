@@ -1,29 +1,8 @@
 import { environment } from '../../environments/environment.generated';
 import { ResumeData } from '../data/resume-data';
 
-const ANTHROPIC_MODEL = "claude-opus-4-8";
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const OPENAI_MODEL = environment.openAiModel;
-const OPENAI_INPUT_PRICE_PER_MILLION = environment.openAiInputPrice;
-const OPENAI_CACHED_INPUT_PRICE_PER_MILLION = environment.openAiCachedInputPrice;
-const OPENAI_OUTPUT_PRICE_PER_MILLION = environment.openAiOutputPrice;
 const MAX_JOB_DESCRIPTION_CHARACTERS = 12_000;
 const MAX_GLOBAL_INSTRUCTION_CHARACTERS = 4_000;
-
-export interface ApiKeys {
-  anthropic: string;
-  openai: string;
-}
-
-interface OpenAiUsage {
-  prompt_tokens?: number;
-  prompt_tokens_details?: { cached_tokens?: number };
-  completion_tokens?: number;
-  estimatedCost?: number;
-}
-
-type UsageHandler = (usage: OpenAiUsage & { estimatedCost: number }) => void;
 
 function compactInput(value: string, maximumCharacters: number): string {
   return value.replace(/\s+/g, ' ').trim().slice(0, maximumCharacters);
@@ -33,56 +12,9 @@ function tailoredOutputTokenBudget(bulletCount: number): number {
   return Math.min(2_500, Math.max(500, bulletCount * 110));
 }
 
-// User-supplied keys entered at runtime (production, where no key is baked in).
-// Stored only in the browser session — never sent anywhere but the AI provider.
-function readStoredApiKeys(): Partial<ApiKeys> {
-  try {
-    const raw = globalThis.sessionStorage?.getItem('apiKeys');
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<ApiKeys>;
-      return { anthropic: parsed.anthropic, openai: parsed.openai };
-    }
-  } catch {
-    // ignore malformed storage
-  }
-  return {};
-}
-
-export function resolveApiKeys(): ApiKeys {
-  const stored = readStoredApiKeys();
-  // Prefer a baked key (local dev); otherwise use the key the user entered (prod).
-  return {
-    anthropic: (environment.anthropicApiKey || stored.anthropic || '').trim(),
-    openai: (environment.openAiApiKey || stored.openai || '').trim(),
-  };
-}
-
-function getApiKeyValue(apiKey: ApiKeys | string, provider: 'anthropic' | 'openai'): string {
-  if (typeof apiKey === "string") {
-    return provider === "openai" ? "" : apiKey;
-  }
-
-  return provider === "openai" ? apiKey?.openai || "" : apiKey?.anthropic || "";
-}
-
-export function isLowCreditError(message: unknown): boolean {
-  const normalized = String(message || "").toLowerCase();
-  return (
-    normalized.includes("credit balance is too low") ||
-    normalized.includes("insufficient_quota") ||
-    normalized.includes("credit") && normalized.includes("low") ||
-    normalized.includes("billing") ||
-    normalized.includes("quota") ||
-    normalized.includes("overloaded") ||
-    normalized.includes("temporarily unavailable") ||
-    normalized.includes("rate limit") ||
-    normalized.includes("too many requests")
-  );
-}
-
 export function extractJsonObject(text: unknown): Record<string, unknown> {
   if (typeof text !== "string") {
-    throw new Error("Model returned no text content.");
+    throw new Error("AI service returned no text content.");
   }
 
   const trimmed = text.trim();
@@ -90,166 +22,54 @@ export function extractJsonObject(text: unknown): Record<string, unknown> {
   const candidate = fenced ? fenced[1] : trimmed;
   const jsonMatch = candidate.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    throw new Error("Could not find JSON in the model response.");
+    throw new Error("Could not find JSON in the AI response.");
   }
 
   return JSON.parse(jsonMatch[0]);
 }
 
-// Managed backend path: POST the prompt to our FastAPI service, which holds the
-// Gemini key server-side and returns the model's raw JSON text. Used whenever a
-// backend URL is configured, so no provider key is needed in the browser.
-async function callGeminiBackend(
-  baseUrl: string,
-  prompt: string,
-  maxTokens: number,
-): Promise<Record<string, unknown>> {
+function readGoogleIdToken(): string {
+  try {
+    return globalThis.sessionStorage?.getItem("googleIdToken") || "";
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * The single AI entry point: POST the prompt to our backend, which holds the
+ * Gemini key server-side, enforces the signed-in user's quota, and returns the
+ * model's JSON text. No API key ever exists in the browser.
+ */
+export async function callModel(prompt: string, maxTokens: number): Promise<Record<string, unknown>> {
+  const baseUrl = (environment.apiBaseUrl || "").trim();
+  if (!baseUrl) {
+    throw new Error("AI service is not configured. Set NG_APP_API_BASE_URL to the backend URL.");
+  }
+
+  const idToken = readGoogleIdToken();
+  if (!idToken) {
+    throw new Error("Please sign in with Google to continue.");
+  }
+
   const response = await fetch(`${baseUrl.replace(/\/+$/, "")}/api/generate`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${idToken}`,
+    },
     body: JSON.stringify({ prompt, maxTokens }),
   });
 
   if (!response.ok) {
     const errBody = (await response.json().catch(() => null)) as { detail?: string } | null;
-    const message = errBody?.detail || `Backend request failed with status ${response.status}`;
+    const message = errBody?.detail || `AI request failed with status ${response.status}`;
     throw new Error(message);
   }
 
+  // Backend returns { text, usage }; the resume logic only needs the JSON text.
   const data = (await response.json()) as { text?: string };
   return extractJsonObject(data.text);
-}
-
-async function callAnthropic(
-  apiKey: string,
-  prompt: string,
-  maxTokens = 4096,
-  model = ANTHROPIC_MODEL,
-): Promise<Record<string, unknown>> {
-  const response = await fetch(ANTHROPIC_API_URL, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-
-  if (!response.ok) {
-    const errBody = await response.json().catch(() => null) as { error?: { message?: string } } | null;
-    const message = errBody?.error?.message || `Request failed with status ${response.status}`;
-    throw new Error(message);
-  }
-
-  const data = await response.json() as { content?: Array<{ type: string; text: string }> };
-  const textBlock = data.content?.find((block) => block.type === "text");
-  if (!textBlock) {
-    throw new Error("Anthropic returned no text content.");
-  }
-
-  return extractJsonObject(textBlock.text);
-}
-
-export function calculateOpenAICost(usage: OpenAiUsage = {}): number {
-  const inputTokens = usage.prompt_tokens || 0;
-  const cachedInputTokens = usage.prompt_tokens_details?.cached_tokens || 0;
-  const uncachedInputTokens = Math.max(0, inputTokens - cachedInputTokens);
-  const outputTokens = usage.completion_tokens || 0;
-
-  return (
-    uncachedInputTokens * OPENAI_INPUT_PRICE_PER_MILLION +
-    cachedInputTokens * OPENAI_CACHED_INPUT_PRICE_PER_MILLION +
-    outputTokens * OPENAI_OUTPUT_PRICE_PER_MILLION
-  ) / 1_000_000;
-}
-
-async function callOpenAI(
-  apiKey: string,
-  prompt: string,
-  maxTokens = 4096,
-  onUsage?: UsageHandler,
-  model = OPENAI_MODEL,
-): Promise<Record<string, unknown>> {
-  const response = await fetch(OPENAI_API_URL, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-
-  if (!response.ok) {
-    const errBody = await response.json().catch(() => null) as { error?: { message?: string } } | null;
-    const message = errBody?.error?.message || `Request failed with status ${response.status}`;
-    throw new Error(message);
-  }
-
-  const data = await response.json() as {
-    usage?: OpenAiUsage;
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  if (data.usage && onUsage) {
-    onUsage({ ...data.usage, estimatedCost: calculateOpenAICost(data.usage) });
-  }
-  const content = data.choices?.[0]?.message?.content;
-  return extractJsonObject(content);
-}
-
-export async function callModelWithFallback({
-  apiKey,
-  prompt,
-  maxTokens = 4096,
-  onUsage,
-  openAiModel,
-  anthropicModel,
-}: {
-  apiKey: ApiKeys | string;
-  prompt: string;
-  maxTokens?: number;
-  onUsage?: UsageHandler;
-  // Optional per-call model overrides. Used so the upload-parse step can run on
-  // a faster/cheaper model than the tailoring step.
-  openAiModel?: string;
-  anthropicModel?: string;
-}): Promise<Record<string, unknown>> {
-  // Prefer the managed backend when configured: the key stays on the server and
-  // the browser sends only the prompt. Falls through to BYO keys when unset.
-  const backendUrl = (environment.apiBaseUrl || "").trim();
-  if (backendUrl) {
-    return await callGeminiBackend(backendUrl, prompt, maxTokens);
-  }
-
-  const anthropicKey = getApiKeyValue(apiKey, "anthropic");
-  const openAiKey = getApiKeyValue(apiKey, "openai");
-
-  if (openAiKey) {
-    return await callOpenAI(openAiKey, prompt, maxTokens, onUsage, openAiModel || OPENAI_MODEL);
-  }
-
-  if (anthropicKey) {
-    try {
-      return await callAnthropic(anthropicKey, prompt, maxTokens, anthropicModel || ANTHROPIC_MODEL);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "";
-      if (isLowCreditError(message)) {
-        throw new Error("Anthropic failed due to billing or quota issues. Configure an OpenAI/ChatGPT key to continue.");
-      }
-      throw error;
-    }
-  }
-
-  throw new Error("No AI API key configured. Set NG_APP_OPENAI_API_KEY or NG_APP_ANTHROPIC_API_KEY.");
 }
 
 export function buildPrompt(clientLabel: string, currentBullets: string[], jobDescription: string): string {
@@ -361,26 +181,17 @@ Return only valid JSON, no markdown code fences, no commentary.
 }`;
 }
 
-export async function tailorBulletsWithClaude({
-  apiKey,
+export async function tailorBullets({
   clientLabel,
   currentBullets,
   jobDescription,
-  onUsage,
 }: {
-  apiKey: ApiKeys;
   clientLabel: string;
   currentBullets: string[];
   jobDescription: string;
-  onUsage?: UsageHandler;
 }): Promise<string[]> {
   const prompt = buildPrompt(clientLabel, currentBullets, jobDescription);
-  const parsed = await callModelWithFallback({
-    apiKey,
-    prompt,
-    maxTokens: tailoredOutputTokenBudget(currentBullets.length),
-    onUsage,
-  });
+  const parsed = await callModel(prompt, tailoredOutputTokenBudget(currentBullets.length));
 
   const mergedBullets = [...currentBullets];
   const indexedUpdates = parsed['updates'];
@@ -404,7 +215,7 @@ export async function tailorBulletsWithClaude({
     if (appliedUpdates > 0) return mergedBullets;
   }
 
-  // Tolerate older model responses while retaining all omitted base-resume bullets.
+  // Tolerate older response shapes while retaining all omitted base-resume bullets.
   const legacyBullets = parsed['updatedBullets'];
   if (Array.isArray(legacyBullets)) {
     legacyBullets.forEach((bullet, index) => {
@@ -462,39 +273,39 @@ Return ONLY the complete updated resume as valid JSON, matching this exact shape
 
 function validateResumeShape(candidate: unknown, original: ResumeData): asserts candidate is ResumeData {
   if (!candidate || typeof candidate !== "object") {
-    throw new Error("Claude's response was not a valid resume object.");
+    throw new Error("The AI response was not a valid resume object.");
   }
   const resume = candidate as Record<string, unknown>;
   const requiredStrings: Array<keyof ResumeData> = ["name", "title", "phone", "email", "location", "linkedin", "education"];
   for (const key of requiredStrings) {
     if (typeof resume[key] !== "string") {
-      throw new Error(`Claude's response is missing or corrupted the "${key}" field.`);
+      throw new Error(`The AI response is missing or corrupted the "${key}" field.`);
     }
   }
   if (!Array.isArray(resume['summary']) || resume['summary'].length === 0) {
-    throw new Error("Claude's response is missing the professional summary.");
+    throw new Error("The AI response is missing the professional summary.");
   }
   if (resume['summary'].length !== original.summary.length) {
     throw new Error("The AI changed the number of summary bullets — rejecting to avoid losing existing points.");
   }
   if (!Array.isArray(resume['skills']) || resume['skills'].some((skill: { label?: string; items?: string }) => !skill.label || !skill.items)) {
-    throw new Error("Claude's response is missing or corrupted the skills table.");
+    throw new Error("The AI response is missing or corrupted the skills table.");
   }
   if (!Array.isArray(resume['experience']) || resume['experience'].length !== original.experience.length) {
-    throw new Error("Claude's response changed the number of jobs — rejecting to avoid data loss.");
+    throw new Error("The AI response changed the number of jobs — rejecting to avoid data loss.");
   }
   for (let i = 0; i < original.experience.length; i++) {
     const origJob = original.experience[i];
     const newJob = resume['experience'][i] as ResumeData['experience'][number] | undefined;
     if (!newJob || !Array.isArray(newJob.projects) || newJob.projects.length !== origJob.projects.length) {
-      throw new Error("Claude's response changed the number of client/projects — rejecting to avoid data loss.");
+      throw new Error("The AI response changed the number of client/projects — rejecting to avoid data loss.");
     }
     for (let j = 0; j < origJob.projects.length; j++) {
       if (newJob.projects[j]?.id !== origJob.projects[j].id) {
-        throw new Error("Claude's response changed a project ID — rejecting to avoid data loss.");
+        throw new Error("The AI response changed a project ID — rejecting to avoid data loss.");
       }
       if (!Array.isArray(newJob.projects[j].bullets) || newJob.projects[j].bullets.length === 0) {
-        throw new Error("Claude's response left a project with no bullets — rejecting.");
+        throw new Error("The AI response left a project with no bullets — rejecting.");
       }
       if (newJob.projects[j].bullets.length !== origJob.projects[j].bullets.length) {
         throw new Error(
@@ -535,19 +346,15 @@ function preserveBulletCounts(candidate: unknown, original: ResumeData): void {
   });
 }
 
-export async function applyGlobalChangesWithClaude({
-  apiKey,
+export async function applyGlobalChanges({
   resume,
   instructions,
-  onUsage,
 }: {
-  apiKey: ApiKeys;
   resume: ResumeData;
   instructions: string;
-  onUsage?: UsageHandler;
 }): Promise<ResumeData> {
   const prompt = buildGlobalChangePrompt(resume, instructions);
-  const parsed = await callModelWithFallback({ apiKey, prompt, maxTokens: 8000, onUsage });
+  const parsed = await callModel(prompt, 8000);
   preserveBulletCounts(parsed, resume);
   validateResumeShape(parsed, resume);
   return parsed;

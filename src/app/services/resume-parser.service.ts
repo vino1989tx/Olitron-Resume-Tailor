@@ -1,22 +1,15 @@
 import { Injectable } from '@angular/core';
 import { ResumeData } from '../data/resume-data';
-import { callModelWithFallback, ApiKeys } from './ai-client';
-import { environment } from '../../environments/environment.generated';
-
-// A fast Claude model for the parse step when only an Anthropic key is set.
-const ANTHROPIC_PARSE_MODEL = 'claude-haiku-4-5-20251001';
+import { callModel } from './ai-client';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ResumeParserService {
   /**
-   * Parse extracted resume text into structured ResumeData using AI
+   * Parse extracted resume text into structured ResumeData using the AI backend.
    */
-  async parseResumeText(
-    extractedText: string,
-    apiKeys: ApiKeys | string,
-  ): Promise<ResumeData> {
+  async parseResumeText(extractedText: string): Promise<ResumeData> {
     if (!extractedText || extractedText.trim().length === 0) {
       throw new Error('No text extracted from resume. Please ensure the file is readable.');
     }
@@ -24,17 +17,9 @@ export class ResumeParserService {
     const prompt = this.buildParsingPrompt(extractedText);
 
     try {
-      const result = await callModelWithFallback({
-        apiKey: apiKeys,
-        prompt,
-        // Long resumes produce large JSON; keep headroom so the output is never
-        // truncated mid-structure (which would drop trailing jobs/bullets).
-        maxTokens: 16000,
-        // Parsing just extracts fields — use a fast/cheap model so uploads of
-        // long resumes finish quickly. Tailoring still uses the primary model.
-        openAiModel: environment.openAiParseModel,
-        anthropicModel: ANTHROPIC_PARSE_MODEL,
-      });
+      // Long resumes produce large JSON; keep headroom so the output is never
+      // truncated mid-structure (which would drop trailing jobs/bullets).
+      const result = await callModel(prompt, 16000);
 
       return this.validateAndStructureResponse(result);
     } catch (error) {

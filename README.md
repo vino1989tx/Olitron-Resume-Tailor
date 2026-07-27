@@ -4,16 +4,17 @@ An Angular app for editing, AI-tailoring, previewing, and exporting a resume
 (ATS-optimized). Upload a PDF/DOCX, tailor it to a job description, and download
 as PDF or Word.
 
+The frontend holds **no API keys**. Users sign in with **Google**, and all AI
+runs on a separate backend (FastAPI + Gemini) that holds the key server-side and
+enforces a per-user token quota. See the backend repo for that service.
+
 ## Development
 
-1. Add your API key to `.env.local` (this file is git-ignored):
+1. Create `.env.local` (git-ignored) pointing at your backend + Google client id:
 
    ```text
-   NG_APP_OPENAI_API_KEY=sk-...
-   # optional: NG_APP_ANTHROPIC_API_KEY=sk-ant-...
-   # optional overrides:
-   # NG_APP_OPENAI_MODEL=gpt-4.1            (tailoring model)
-   # NG_APP_OPENAI_PARSE_MODEL=gpt-4.1-mini  (fast/cheap upload-parse model)
+   NG_APP_API_BASE_URL=http://localhost:8000
+   NG_APP_GOOGLE_CLIENT_ID=your-web-client-id.apps.googleusercontent.com
    ```
 
 2. Install and run:
@@ -23,35 +24,27 @@ as PDF or Word.
    npm start
    ```
 
-3. Open `http://localhost:4200`.
+3. Open `http://localhost:4200`. You'll be asked to sign in with Google.
 
-## API keys & security
+## How auth + AI work
 
-- **Local dev** (`npm start`): the key from `.env.local` is baked into the dev
-  build for convenience.
-- **Production** (`npm run build`): **no API key is baked into the bundle.** The
-  build always ships with empty keys, so your key can never leak to end users.
-  In production, each user supplies **their own** OpenAI/Anthropic key via
-  **Resume → Upload Resume → Configure API Keys**; it's stored only in that
-  user's browser session and sent directly to the AI provider (never to us).
+- **Google sign-in** gates the whole app. The browser gets a Google ID token.
+- Every AI action (upload-parse, tailor, common-changes) POSTs the prompt to
+  `NG_APP_API_BASE_URL` with that token in the `Authorization` header.
+- The backend verifies the token, checks the user's token quota, calls Gemini,
+  records usage, and returns the result. **No provider key is ever in the browser.**
 
-  > If you ever want to serve AI calls with a shared key, put it behind a small
-  > backend proxy — never in the client bundle.
+Both env values are public (a backend URL and an OAuth client id), so production
+builds are safe — there are no secrets to strip.
 
-## Managed backend (Gemini) — key never in the browser
+## Deploy (Netlify)
 
-Instead of each user supplying their own key, you can run the FastAPI service in
-[`backend/`](backend/README.md), which holds a **Google Gemini** key server-side.
-Set `NG_APP_API_BASE_URL` to the backend's URL (in `.env.local` for dev, or in
-Netlify's environment variables for prod) and the UI routes every AI call through
-it — no provider key is needed in the browser. When the variable is empty, the app
-falls back to the bring-your-own OpenAI/Anthropic key flow described above.
-
-See [`backend/README.md`](backend/README.md) for run and deploy instructions.
+`netlify.toml` sets the build command (`npm run build`) and publish directory
+(`dist/resume-tailor/browser`). Set `NG_APP_API_BASE_URL` and
+`NG_APP_GOOGLE_CLIENT_ID` in Netlify's environment variables, then deploy.
 
 ## Commands
 
-- `npm start` — dev server (bakes the local key)
-- `npm run build` — **production** build (keys stripped)
-- `npm run build:dev` — development-configuration build (keeps the local key)
+- `npm start` — dev server
+- `npm run build` — production build
 - `npm test` — run unit tests

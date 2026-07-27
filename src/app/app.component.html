@@ -1,4 +1,17 @@
 <div class="app-shell" [class.app-dark]="isDark">
+  <!-- Google sign-in gate: covers the whole app until the user authenticates. -->
+  @if (loginRequired) {
+    <div class="login-gate">
+      <div class="login-card">
+        <img src="Olitron-full.png" alt="Olitron" class="login-logo" />
+        <h1 class="brand-title">ResumeCraft</h1>
+        <p class="login-sub">ATS-Optimized Resume Tailoring</p>
+        <p class="login-hint">Sign in with your Google account to continue.</p>
+        <div class="login-btn-host" #loginButton></div>
+      </div>
+    </div>
+  }
+
   <header class="app-topbar">
     <div class="topbar-brand">
       <div class="brand">
@@ -7,14 +20,25 @@
       </div>
     </div>
     <div class="topbar-actions">
-            <div
-        class="credit-balance"
-        [attr.aria-label]="'$' + creditBalance.toFixed(4) + ' estimated credit balance'"
-      >
-        <span class="credit-balance-dot" aria-hidden="true"></span>
-        <span class="credit-balance-label">Estimated balance</span>
-        <span>${{ formattedCreditBalance }}</span>
-      </div>
+      @if (auth.user(); as u) {
+        @if (auth.usage(); as usage) {
+          <div
+            class="usage-chip"
+            [title]="(usage.totalTokens | number) + ' of ' + (usage.limit | number) + ' tokens used'"
+          >
+            <span class="credit-balance-dot" aria-hidden="true"></span>
+            <span class="credit-balance-label">Tokens</span>
+            <span>{{ usage.totalTokens | number }} / {{ usage.limit | number }}</span>
+          </div>
+        }
+        <div class="user-chip">
+          @if (u.picture) {
+            <img class="user-avatar" [src]="u.picture" alt="" referrerpolicy="no-referrer" />
+          }
+          <span class="user-email">{{ u.email }}</span>
+          <button type="button" class="signout-btn" (click)="auth.signOut()">Sign out</button>
+        </div>
+      }
       <div class="hdr-dropdown">
         <button
           type="button"
@@ -128,53 +152,6 @@
     ></app-resume-history>
   }
 
-  <!-- API key help popup -->
-  @if (showKeyHelp) {
-    <div class="modal-backdrop" (click)="closeKeyHelp()">
-      <div class="key-help-modal" (click)="$event.stopPropagation()">
-        <button type="button" class="key-help-close" (click)="closeKeyHelp()" aria-label="Close">✕</button>
-        <h2>Get an API key</h2>
-        <p class="key-help-intro">
-          This app uses your own AI key. It's stored only in your browser and sent directly to the
-          provider — never to us. New accounts usually include free starter credit; otherwise add a
-          small amount of billing.
-        </p>
-
-        <div class="key-help-grid">
-          <div class="key-help-card">
-            <h3>🟢 OpenAI (ChatGPT)</h3>
-            <ol>
-              <li>Sign in at <strong>platform.openai.com</strong>.</li>
-              <li>Open <strong>API keys</strong> and click <strong>Create new secret key</strong>.</li>
-              <li>Copy the key (starts with <code>sk-…</code>) — you can only see it once.</li>
-              <li>Ensure you have credit under <strong>Billing</strong>.</li>
-              <li>Paste it in <strong>Resume → Upload Resume → Configure API Keys</strong>.</li>
-            </ol>
-            <a class="key-help-btn" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
-              Generate OpenAI key ↗
-            </a>
-          </div>
-
-          <div class="key-help-card">
-            <h3>🟣 Claude (Anthropic)</h3>
-            <ol>
-              <li>Sign in at <strong>console.anthropic.com</strong>.</li>
-              <li>Open <strong>Settings → API Keys</strong> and click <strong>Create Key</strong>.</li>
-              <li>Copy the key (starts with <code>sk-ant-…</code>).</li>
-              <li>Add credit under <strong>Billing / Plans</strong>.</li>
-              <li>Paste it in <strong>Resume → Upload Resume → Configure API Keys</strong>.</li>
-            </ol>
-            <a class="key-help-btn" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">
-              Generate Claude key ↗
-            </a>
-          </div>
-        </div>
-
-        <p class="key-help-note">🔒 Your key stays in your browser session only.</p>
-      </div>
-    </div>
-  }
-
   <!-- AI working overlay (tailoring / applying changes) -->
   @if (status === 'loading' || globalStatus === 'loading') {
     <div class="ai-loader-overlay" role="status" aria-live="polite">
@@ -202,10 +179,7 @@
         aria-label="Close tailor panel"
       >✕</button>
       <h2>Tailor Resume</h2>
-      <p class="panel-subtitle">
-        ATS-Optimized Resume Tailoring ·
-        <button type="button" class="key-help-link" (click)="openKeyHelp()">🔑 How to get an API key</button>
-      </p>
+      <p class="panel-subtitle">ATS-Optimized Resume Tailoring</p>
       <div class="header-color-control">
         <label class="header-color-picker" title="Change the resume header color">
           <span class="header-color-swatch" [style.background]="headerColor"></span>
@@ -293,12 +267,6 @@
         </button>
       </div>
 
-      @if (!hasApiKey) {
-        <div class="status-error">
-          No AI API key set. Add your OpenAI or Anthropic key (stored only in your browser) —
-          <button type="button" class="key-help-link" (click)="openKeyHelp()">see how to get one</button>.
-        </div>
-      }
       @if (error) {
         <div class="status-error">{{ error }}</div>
       }

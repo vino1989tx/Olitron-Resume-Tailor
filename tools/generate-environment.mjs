@@ -26,36 +26,18 @@ try {
   // Local environment configuration is optional.
 }
 
-// In production we NEVER bake API keys into the shipped bundle — they would be
-// readable by anyone. Keys are only embedded for local development; in prod the
-// user supplies their own key at runtime (stored in their browser only).
-const omitKeys =
-  process.argv.includes('--prod') ||
-  process.env['RESUME_TAILOR_OMIT_KEYS'] === 'true' ||
-  process.env['NODE_ENV'] === 'production';
-
 const stringValue = (key, fallback = '') => JSON.stringify(values[key] || fallback);
-const numberValue = (key, fallback) => {
-  const parsed = Number(values[key]);
-  return Number.isFinite(parsed) ? parsed : fallback;
-};
-const keyValue = (key) => JSON.stringify(omitKeys ? '' : values[key] || '');
 
+// The frontend holds NO secrets: all AI runs on the backend behind Google login.
+// Both values below are public (a backend URL and an OAuth client id).
 const source = `// Generated from .env.local. Do not edit manually.
-// API keys are included only for local dev; production builds ship with empty keys.
+// The frontend contains no secrets — AI runs server-side behind Google sign-in.
 export const environment = {
-  anthropicApiKey: ${keyValue('NG_APP_ANTHROPIC_API_KEY')},
-  openAiApiKey: ${keyValue('NG_APP_OPENAI_API_KEY')},
-  // Base URL of the managed AI backend (FastAPI + Gemini). When set, all AI
-  // calls route through it and no provider key is needed in the browser. This
-  // is a public URL (not a secret), so it is kept in production builds too.
+  // Base URL of the managed AI backend (FastAPI + Gemini). All AI calls route
+  // through it; the browser never holds a provider key.
   apiBaseUrl: ${stringValue('NG_APP_API_BASE_URL', '')},
-  openAiModel: ${stringValue('NG_APP_OPENAI_MODEL', 'gpt-4.1')},
-  openAiParseModel: ${stringValue('NG_APP_OPENAI_PARSE_MODEL', 'gpt-4.1-mini')},
-  openAiInputPrice: ${numberValue('NG_APP_OPENAI_INPUT_PRICE', 2)},
-  openAiCachedInputPrice: ${numberValue('NG_APP_OPENAI_CACHED_INPUT_PRICE', 0.5)},
-  openAiOutputPrice: ${numberValue('NG_APP_OPENAI_OUTPUT_PRICE', 8)},
-  initialCreditBalance: ${numberValue('NG_APP_CREDIT_BALANCE', 5)},
+  // Google OAuth 2.0 Web Client ID. The whole app requires Google sign-in when set.
+  googleClientId: ${stringValue('NG_APP_GOOGLE_CLIENT_ID', '')},
 };
 `;
 
