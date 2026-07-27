@@ -12,6 +12,7 @@ import {
   BorderStyle,
   HeadingLevel,
   TableLayoutType,
+  LevelFormat,
 } from "docx";
 import { ResumeData, ResumeJob } from '../data/resume-data';
 
@@ -52,10 +53,47 @@ const NO_BORDER = {
   right: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
 };
 
+// Zero cell padding so table content (name, skills labels) starts at the same
+// left edge as the section headers and bullets — otherwise Word's default
+// ~108-twip cell margin shifts table text to the right of everything else.
+const ZERO_CELL_MARGINS = { top: 0, bottom: 0, left: 0, right: 0 };
+
+// Bullet indent: marker sits at the left margin (aligned under the "P" of the
+// section header) and text hangs a small step to the right.
+const BULLET_INDENT = { left: 180, hanging: 180 };
+
+// Custom bullet list so the marker glyph is smaller than the body text
+// (default docx bullets scale with the text size and look oversized).
+const BULLET_REF = "resume-bullets";
+const BULLET_NUMBERING = {
+  config: [
+    {
+      reference: BULLET_REF,
+      levels: [
+        {
+          level: 0,
+          format: LevelFormat.BULLET,
+          text: "•",
+          alignment: AlignmentType.LEFT,
+          style: {
+            run: { size: 20 },
+            paragraph: { indent: BULLET_INDENT },
+          },
+        },
+      ],
+    },
+  ],
+};
+
+// One blank line of separation after a completed section.
+function sectionGap() {
+  return new Paragraph({ spacing: { after: 0 }, children: [] });
+}
+
 function sectionHeader(text: string) {
   return new Paragraph({
     shading: { type: ShadingType.CLEAR, color: "auto", fill: HEADER_BG },
-    spacing: { before: 240, after: 120 },
+    spacing: { before: 240, after: 240 },
     children: [
       new TextRun({ text: text.toUpperCase(), bold: true, color: NAVY, size: 20 }),
     ],
@@ -64,7 +102,8 @@ function sectionHeader(text: string) {
 
 function bulletParagraph(text: string) {
   return new Paragraph({
-    bullet: { level: 0 },
+    numbering: { reference: BULLET_REF, level: 0 },
+    indent: BULLET_INDENT,
     spacing: { after: 60 },
     children: [new TextRun({ text, size: 21, color: DARK })],
   });
@@ -75,6 +114,7 @@ function skillsTable(skills: ResumeData['skills']) {
     width: { size: USABLE_WIDTH, type: WidthType.DXA },
     columnWidths: [SKILLS_LABEL_COL, SKILLS_ITEMS_COL],
     layout: TableLayoutType.FIXED,
+    indent: { size: 0, type: WidthType.DXA },
     rows: skills.map(
       (row) =>
         new TableRow({
@@ -144,17 +184,19 @@ function headerTable(resume: ResumeData) {
     columnWidths: [HEADER_LEFT_COL, HEADER_RIGHT_COL],
     layout: TableLayoutType.FIXED,
     borders: NO_BORDER,
+    indent: { size: 0, type: WidthType.DXA },
     rows: [
       new TableRow({
         children: [
           new TableCell({
             width: { size: HEADER_LEFT_COL, type: WidthType.DXA },
             borders: NO_BORDER,
+            margins: ZERO_CELL_MARGINS,
             children: [
               new Paragraph({
                 heading: HeadingLevel.TITLE,
                 spacing: { after: 40 },
-                children: [new TextRun({ text: resume.name, bold: true, color: NAVY, size: 40 })],
+                children: [new TextRun({ text: resume.name, bold: true, color: NAVY, size: 40, font: "Calibri" })],
               }),
               new Paragraph({
                 spacing: { after: 40 },
@@ -174,6 +216,7 @@ function headerTable(resume: ResumeData) {
           new TableCell({
             width: { size: HEADER_RIGHT_COL, type: WidthType.DXA },
             borders: NO_BORDER,
+            margins: ZERO_CELL_MARGINS,
             children: [
               new Paragraph({
                 alignment: AlignmentType.RIGHT,
@@ -209,6 +252,12 @@ export async function exportResumeToDocx(
   HEADER_BG = lightTint(NAVY);
 
   const doc = new Document({
+    numbering: BULLET_NUMBERING,
+    styles: {
+      default: {
+        document: { run: { font: "Calibri" } },
+      },
+    },
     sections: [
       {
         properties: {
@@ -216,15 +265,19 @@ export async function exportResumeToDocx(
         },
         children: [
           headerTable(resume),
+          sectionGap(),
 
           sectionHeader("Professional Summary"),
           ...resume.summary.map(bulletParagraph),
+          sectionGap(),
 
           sectionHeader("Core Technical Skills"),
           skillsTable(resume.skills),
+          sectionGap(),
 
           sectionHeader("Professional Experience"),
           ...resume.experience.flatMap(jobSection),
+          sectionGap(),
 
           sectionHeader("Education"),
           new Paragraph({
