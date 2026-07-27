@@ -86,14 +86,9 @@ export class AppComponent implements OnInit {
       const modalOpen = this._showLogin();
 
       if (signedIn) {
-        // Sign-in just succeeded: close the modal and run the pending action.
+        // Sign-in just succeeded: close the modal and run any pending action.
         if (modalOpen) this._showLogin.set(false);
-        const action = this.pendingAction;
-        if (action) {
-          this.pendingAction = null;
-          if (action === 'upload') this.openUploadPanel();
-          else this.openResumeHistory();
-        }
+        this.runPending();
         return;
       }
 
@@ -104,9 +99,10 @@ export class AppComponent implements OnInit {
     });
   }
 
-  // True when the user may use the app: signed in, or auth not configured (dev).
+  // True once the user has entered the app: signed in with Google, or (when auth
+  // is not configured) after tapping a CTA in demo mode.
   get loggedIn(): boolean {
-    return this.auth.enabled ? !!this.auth.user() : true;
+    return this.auth.enabled ? !!this.auth.user() : this._demoEntered();
   }
 
   get showLogin(): boolean {
@@ -118,24 +114,36 @@ export class AppComponent implements OnInit {
     this.pendingAction = null;
   }
 
-  // Hero "Optimize My Resume": sign in first (if needed), then open upload.
-  startOptimize(): void {
+  private runPending(): void {
+    const action = this.pendingAction;
+    this.pendingAction = null;
+    if (action === 'history') this.openResumeHistory();
+  }
+
+  // Enter the app: real Google sign-in when configured, else demo mode.
+  private enterApp(): void {
     if (this.loggedIn) {
-      this.openUploadPanel();
+      this.runPending();
+      return;
+    }
+    if (this.auth.enabled) {
+      this._showLogin.set(true); // effect runs the pending action on success
     } else {
-      this.pendingAction = 'upload';
-      this._showLogin.set(true);
+      this._demoEntered.set(true);
+      this.runPending();
     }
   }
 
-  // Hero "Open Saved Resume": sign in first (if needed), then open history.
+  // Landing "Optimize My Resume": sign in, then land on the upload page.
+  startOptimize(): void {
+    this.pendingAction = null;
+    this.enterApp();
+  }
+
+  // Landing "Open Saved Resume": sign in, then open saved resumes.
   startOpenSaved(): void {
-    if (this.loggedIn) {
-      this.openResumeHistory();
-    } else {
-      this.pendingAction = 'history';
-      this._showLogin.set(true);
-    }
+    this.pendingAction = 'history';
+    this.enterApp();
   }
 
   // True when the managed AI backend is configured; all AI runs server-side.
@@ -172,6 +180,9 @@ export class AppComponent implements OnInit {
   private readonly _tailorPanelOpen = signal(false);
   // Google sign-in modal (opened from the landing CTAs).
   private readonly _showLogin = signal(false);
+  // Demo "entered" flag used only when Google auth is NOT configured, so the
+  // gated flow (landing → enter → upload page) can still be previewed locally.
+  private readonly _demoEntered = signal(false);
   // Hero illustration: falls back to the CSS-built visual if the image is absent.
   private readonly _heroImgFailed = signal(false);
 

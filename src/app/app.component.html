@@ -314,7 +314,7 @@
     }
 
     <main class="preview-column">
-      @if (!isResumeLoaded) {
+      @if (!loggedIn) {
         <div class="space-landing">
           <!-- Animated space background -->
           <div class="hero-space" aria-hidden="true">
@@ -478,6 +478,35 @@
               </div>
             </div>
           </section>
+        </div>
+      } @else if (!isResumeLoaded) {
+        <!-- Signed in, no resume yet: focused upload page (same space bg) -->
+        <div class="space-landing upload-stage">
+          <div class="hero-space" aria-hidden="true">
+            <div class="galaxy"></div>
+            <div class="nebula nebula-1"></div>
+            <div class="nebula nebula-2"></div>
+            <div class="stars stars-sm"></div>
+            <div class="stars stars-md"></div>
+            <div class="stars stars-lg"></div>
+            <span class="shooting-star"></span>
+            <span class="shooting-star shooting-star-2"></span>
+          </div>
+
+          <div class="uw-inner">
+            <span class="hero-badge">✦ LET'S GET STARTED</span>
+            <h1 class="uw-title">Upload your resume</h1>
+            <p class="uw-sub">
+              Drop in your current resume (PDF or DOCX). We'll parse it, then you can
+              tailor it to any job and export a polished, ATS-ready copy.
+            </p>
+            <button type="button" class="uw-upload" (click)="openUploadPanel()">
+              📤 Upload Resume
+            </button>
+            <button type="button" class="uw-saved" (click)="openResumeHistory()">
+              or open a saved resume
+            </button>
+          </div>
         </div>
       } @else if (previewVisible) {
       <div
