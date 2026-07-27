@@ -299,69 +299,121 @@
 
     <main class="preview-column">
       @if (!isResumeLoaded) {
-        <div class="hero">
-          <p class="hero-eyebrow">ATS-Optimized Resume Tailoring</p>
-          <h1 class="hero-title">Resume ATS AI Builder</h1>
-          <p class="hero-sub">
-            Upload your resume and tailor it to any job description — rewritten with
-            the right keywords to sail through Applicant Tracking Systems.
-          </p>
-
-          <div class="hero-stage">
-            <div class="hero-glow"></div>
-
-            <!-- Spotlighted resume document -->
-            <div class="hero-doc">
-              <div class="hero-doc-name"></div>
-              <div class="hero-doc-sub"></div>
-              <div class="hero-doc-bar"></div>
-              <div class="hero-doc-line"></div>
-              <div class="hero-doc-line short"></div>
-              <div class="hero-doc-line"></div>
-              <div class="hero-doc-bar"></div>
-              <div class="hero-doc-line"></div>
-              <div class="hero-doc-line short"></div>
-            </div>
-
-            <!-- Anchored feature callouts -->
-            <span class="hero-tag hero-tag-red">
-              <i class="hero-tag-dot"></i> ATS Keyword Match
-            </span>
-            <span class="hero-tag hero-tag-blue">
-              <i class="hero-tag-dot"></i> AI Bullet Rewrite
-            </span>
-            <span class="hero-tag hero-tag-green">
-              <i class="hero-tag-dot"></i> Section Targeting
-            </span>
+        <div class="space-landing">
+          <!-- Animated space background -->
+          <div class="hero-space" aria-hidden="true">
+            <div class="nebula nebula-1"></div>
+            <div class="nebula nebula-2"></div>
+            <div class="stars stars-sm"></div>
+            <div class="stars stars-md"></div>
+            <div class="stars stars-lg"></div>
+            <span class="shooting-star"></span>
+            <span class="shooting-star shooting-star-2"></span>
           </div>
 
-          <div class="hero-actions">
-            <button type="button" class="hero-cta" (click)="openUploadPanel()">
-              📤 Upload your resume
-            </button>
-            <button type="button" class="hero-cta-ghost" (click)="openResumeHistory()">
-              📂 Open saved resume
-            </button>
-          </div>
-          <p class="hero-note">🔒 You'll sign in with Google before your resume is parsed.</p>
+          <section class="hero">
+            <div class="hero-copy">
+              <span class="hero-badge">✦ AI-POWERED RESUME OPTIMIZER</span>
+              <h1 class="hero-h1">
+                Build a Resume<br />
+                That <span class="grad">Gets You Hired</span>
+              </h1>
+              <p class="hero-lead">
+                Leverage AI to optimize your resume, match any job description, and
+                land your dream job faster.
+              </p>
+              <div class="hero-pills">
+                <span class="hero-pill">✅ ATS Friendly</span>
+                <span class="hero-pill">✨ AI Optimization</span>
+                <span class="hero-pill">🏆 Proven Results</span>
+              </div>
+              <div class="hero-actions">
+                <button type="button" class="hero-cta" (click)="openUploadPanel()">
+                  Optimize My Resume 🚀
+                </button>
+                <button type="button" class="hero-cta-ghost" (click)="openResumeHistory()">
+                  ▷ Open Saved Resume
+                </button>
+              </div>
+              <p class="hero-note">🔒 Sign in with Google before your resume is parsed.</p>
+            </div>
 
-          <div class="hero-cards">
-            <div class="hero-card">
-              <div class="hero-card-icon">🎯</div>
-              <h3>ATS-Optimized</h3>
-              <p>Keywords, phrasing, and structure aligned to what ATS filters scan for.</p>
+            <!-- Space visual: floating resume card with match ring, planets, orbit -->
+            <div class="hero-visual" aria-hidden="true">
+              <div class="planet planet-lg"></div>
+              <div class="planet planet-sm"><span class="planet-ring"></span></div>
+              <div class="astronaut">🧑‍🚀</div>
+
+              <div class="resume-card">
+                <div class="rc-head">
+                  <div class="rc-avatar">🧑‍💼</div>
+                  <div>
+                    <div class="rc-name">John Doe</div>
+                    <div class="rc-role">Senior Frontend Developer</div>
+                  </div>
+                </div>
+                <div class="rc-sec">EXPERIENCE</div>
+                <div class="rc-line"></div>
+                <div class="rc-line short"></div>
+                <div class="rc-sec">SKILLS</div>
+                <div class="rc-line"></div>
+                <div class="rc-sec">EDUCATION</div>
+                <div class="rc-line short"></div>
+                <div class="rc-match">
+                  <div class="rc-match-num">98%</div>
+                  <div class="rc-match-lbl">MATCH</div>
+                </div>
+              </div>
+
+              <div class="orbit-portal"></div>
             </div>
-            <div class="hero-card">
-              <div class="hero-card-icon">✨</div>
-              <h3>AI Tailoring</h3>
-              <p>Rewrites each bullet to match the target role — grounded in your real experience.</p>
+          </section>
+
+          <!-- Stats strip -->
+          <section class="hero-stats">
+            <div class="stat"><span class="stat-ic">👥</span><div><b>50K+</b><small>Users Optimized</small></div></div>
+            <div class="stat"><span class="stat-ic">📄</span><div><b>100K+</b><small>Resumes Enhanced</small></div></div>
+            <div class="stat"><span class="stat-ic">📈</span><div><b>85%</b><small>More Interview Calls</small></div></div>
+            <div class="stat"><span class="stat-ic">⭐</span><div><b>4.9/5</b><small>User Rating</small></div></div>
+          </section>
+
+          <!-- Features -->
+          <section class="features">
+            <h2 class="features-title">Everything You Need to Succeed</h2>
+            <span class="features-underline"></span>
+            <div class="features-grid">
+              <div class="feature-card">
+                <div class="fc-icon">📝</div>
+                <h3>AI Resume Builder</h3>
+                <p>Create ATS-friendly resumes with AI-powered suggestions.</p>
+              </div>
+              <div class="feature-card">
+                <div class="fc-icon">🎯</div>
+                <h3>Job Match Tailoring</h3>
+                <p>Rewrite each section to match a target job description.</p>
+              </div>
+              <div class="feature-card">
+                <div class="fc-icon">🔍</div>
+                <h3>Keyword Optimization</h3>
+                <p>Find and add the right keywords to rank higher with ATS.</p>
+              </div>
+              <div class="feature-card">
+                <div class="fc-icon">✍️</div>
+                <h3>Inline Editing</h3>
+                <p>Click any line to edit, add, or remove — live in the preview.</p>
+              </div>
+              <div class="feature-card">
+                <div class="fc-icon">🎨</div>
+                <h3>Custom Accent</h3>
+                <p>Recolor your resume headers to match your personal brand.</p>
+              </div>
+              <div class="feature-card">
+                <div class="fc-icon">⬇️</div>
+                <h3>PDF &amp; Word Export</h3>
+                <p>Download a polished, recruiter-ready resume in one click.</p>
+              </div>
             </div>
-            <div class="hero-card">
-              <div class="hero-card-icon">⬇️</div>
-              <h3>Instant Export</h3>
-              <p>Download a polished, recruiter-ready resume as PDF or Word in one click.</p>
-            </div>
-          </div>
+          </section>
         </div>
       } @else if (previewVisible) {
       <div
